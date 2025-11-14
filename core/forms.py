@@ -5,17 +5,135 @@ from .models import Income, Expense, Event, Document
 
 
 class IncomeForm(forms.ModelForm):
+    amount = forms.FloatField(
+        required=True,
+        min_value=0.01,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': '0.00',
+            'step': '0.01',
+            'min': '0.01'
+        }),
+        label='Сумма',
+        help_text='Обязательное поле'
+    )
+    date = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date'
+        }),
+        label='Дата',
+        help_text='Обязательное поле'
+    )
+    category = forms.CharField(
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'list': 'income-categories',
+            'placeholder': 'Выберите или введите новую категорию',
+            'autocomplete': 'off'
+        }),
+        label='Категория',
+        help_text='Выберите из существующих или введите новую'
+    )
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Автоматизация, бонус, продажа курса...',
+            'style': 'resize: vertical; min-height: 80px;'
+        }),
+        label='Описание',
+        help_text='Необязательное поле'
+    )
+    
     class Meta:
         model = Income
         fields = ['amount', 'date', 'category', 'description']
+    
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount is None or amount <= 0:
+            raise forms.ValidationError('Сумма должна быть больше нуля')
+        return amount
+    
+    def clean_date(self):
+        date = self.cleaned_data.get('date')
+        if date is None:
+            raise forms.ValidationError('Дата обязательна для заполнения')
+        return date
 
 
 class ExpenseForm(forms.ModelForm):
-    auto_categorize = forms.BooleanField(initial=True, required=False, label='Автокатегоризация')
+    amount = forms.FloatField(
+        required=True,
+        min_value=0.01,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': '0.00',
+            'step': '0.01',
+            'min': '0.01'
+        }),
+        label='Сумма',
+        help_text='Обязательное поле'
+    )
+    date = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date'
+        }),
+        label='Дата',
+        help_text='Обязательное поле'
+    )
+    category = forms.CharField(
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'list': 'expense-categories',
+            'placeholder': 'Выберите или введите новую категорию',
+            'autocomplete': 'off'
+        }),
+        label='Категория',
+        help_text='Выберите из существующих или введите новую'
+    )
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Автоматизация, бонус, продажа курса...',
+            'style': 'resize: vertical; min-height: 80px;'
+        }),
+        label='Описание',
+        help_text='Необязательное поле'
+    )
+    auto_categorize = forms.BooleanField(
+        initial=True, 
+        required=False, 
+        label='Автокатегоризация',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input'
+        })
+    )
 
     class Meta:
         model = Expense
         fields = ['amount', 'date', 'category', 'description']
+    
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount is None or amount <= 0:
+            raise forms.ValidationError('Сумма должна быть больше нуля')
+        return amount
+    
+    def clean_date(self):
+        date = self.cleaned_data.get('date')
+        if date is None:
+            raise forms.ValidationError('Дата обязательна для заполнения')
+        return date
 
 
 class EventForm(forms.ModelForm):

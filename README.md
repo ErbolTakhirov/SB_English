@@ -79,7 +79,9 @@ DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
 # OpenRouter AI (получите ключ на https://openrouter.ai/keys)
 LLM_API_KEY=sk-or-v1-your-key-here
 LLM_API_URL=https://openrouter.ai/api/v1/chat/completions
-LLM_MODEL=openai/gpt-4o-mini
+# БЕСПЛАТНЫЕ МОДЕЛИ: deepseek-chat-v3.1:free, qwen3-coder-480b-a35b:free
+# ПЛАТНЫЕ МОДЕЛИ: openai/gpt-4o-mini, google/gemini-pro-1.5-flash, и др.
+LLM_MODEL=deepseek-chat-v3.1:free
 LLM_MAX_TOKENS=3000
 
 # Опционально: Ollama для локального режима

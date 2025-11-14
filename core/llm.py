@@ -173,8 +173,11 @@ def get_ai_advice_from_data(data_blob: str, extra_instruction: str = "", anonymi
     if extra_instruction:
         messages.append({"role": "user", "content": extra_instruction})
 
+    # Получаем модель из настроек или параметров запроса
+    model = getattr(settings, 'LLM_MODEL', 'deepseek-chat-v3.1:free')
+    
     payload = {
-        "model": settings.LLM_MODEL,
+        "model": model,  # Явно указываем модель в параметрах запроса
         "messages": messages,
         "max_tokens": getattr(settings, 'LLM_MAX_TOKENS', 4000),  # Ограничиваем токены для экономии
     }
@@ -186,7 +189,11 @@ def get_ai_advice_from_data(data_blob: str, extra_instruction: str = "", anonymi
             try:
                 error_data = resp.json()
                 if 'error' in error_data:
-                    error_detail = error_data['error'].get('message', str(error_data['error']))
+                    error_msg = error_data['error'].get('message', str(error_data['error']))
+                    error_detail = error_msg
+                    # Проверяем на лимиты free tier
+                    if 'limit' in error_msg.lower() or 'quota' in error_msg.lower() or 'free' in error_msg.lower():
+                        error_detail = f"⚠️ Достигнут лимит бесплатного тарифа. {error_msg}\n\nПопробуйте позже или используйте платную модель."
             except:
                 error_detail = resp.text[:200] if resp.text else f"HTTP {resp.status_code}"
             return f"[AI ошибка] {error_detail}"
@@ -290,8 +297,11 @@ def chat_with_context(
     
     full_messages = [{"role": "system", "content": sys_prompt}] + messages
     
+    # Получаем модель из настроек или параметров запроса
+    model = getattr(settings, 'LLM_MODEL', 'deepseek-chat-v3.1:free')
+    
     payload = {
-        "model": settings.LLM_MODEL,
+        "model": model,  # Явно указываем модель в параметрах запроса
         "messages": full_messages,
         "max_tokens": getattr(settings, 'LLM_MAX_TOKENS', 4000),  # Ограничиваем токены для экономии
     }
@@ -305,13 +315,17 @@ def chat_with_context(
             try:
                 error_data = resp.json()
                 if 'error' in error_data:
-                    error_detail = error_data['error'].get('message', str(error_data['error']))
+                    error_msg = error_data['error'].get('message', str(error_data['error']))
+                    error_detail = error_msg
+                    # Проверяем на лимиты free tier
+                    if 'limit' in error_msg.lower() or 'quota' in error_msg.lower() or 'free' in error_msg.lower():
+                        error_detail = f"⚠️ Достигнут лимит бесплатного тарифа. {error_msg}\n\nПопробуйте позже или используйте платную модель в настройках."
                 elif 'message' in error_data:
                     error_detail = error_data['message']
             except:
                 error_detail = resp.text[:200] if resp.text else f"HTTP {resp.status_code}"
             
-            return f"[AI ошибка] {error_detail}\n\nПроверьте:\n- Правильность API ключа в settings.py\n- Наличие баланса на OpenRouter\n- Формат запроса"
+            return f"[AI ошибка] {error_detail}\n\nПроверьте:\n- Правильность API ключа в settings.py\n- Наличие баланса на OpenRouter (для бесплатных моделей может быть лимит)\n- Формат запроса"
         
         data = resp.json()
         

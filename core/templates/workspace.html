@@ -753,7 +753,8 @@ async function sendMessage() {
   try {
     const willUseLocal = false;
     const anonymize = true;
-    const selectedModel = 'openai/gpt-4o-mini';
+    // Модель теперь берется из настроек сервера (settings.LLM_MODEL)
+    // По умолчанию используется бесплатная модель: deepseek-chat-v3.1:free
 
     if (!willUseLocal && !anonymize) {
       const proceed = confirm('Внимание: данные будут отправлены в облако без анонимизации. Продолжить?');

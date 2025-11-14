@@ -42,17 +42,12 @@ class UserProfile(models.Model):
 
 
 class Income(models.Model):
-    CATEGORY_CHOICES = [
-        ('services', 'Услуги'),
-        ('goods', 'Товары'),
-        ('rent', 'Аренда'),
-        ('other', 'Другое'),
-    ]
+    # Убрали статичные CATEGORY_CHOICES - теперь категории берутся из БД
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='incomes', null=True, blank=True)
     amount = models.FloatField()
     date = models.DateField()
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    category = models.CharField(max_length=50)  # Без choices - свободный ввод
     description = models.TextField(blank=True, null=True)
     # Источник файла (если транзакция импортирована из файла)
     source_file = models.ForeignKey('UploadedFile', on_delete=models.SET_NULL, null=True, blank=True, related_name='incomes', help_text='Файл, из которого была импортирована эта транзакция')
@@ -72,19 +67,12 @@ class Income(models.Model):
 
 
 class Expense(models.Model):
-    CATEGORY_CHOICES = [
-        ('purchase', 'Закупка'),
-        ('marketing', 'Реклама'),
-        ('salary', 'Зарплаты'),
-        ('rent', 'Аренда'),
-        ('tax', 'Налоги'),
-        ('other', 'Другое'),
-    ]
+    # Убрали статичные CATEGORY_CHOICES - теперь категории берутся из БД
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='expenses', null=True, blank=True)
     amount = models.FloatField()
     date = models.DateField()
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    category = models.CharField(max_length=50)  # Без choices - свободный ввод
     description = models.TextField(blank=True, null=True)
     # Источник файла (если транзакция импортирована из файла)
     source_file = models.ForeignKey('UploadedFile', on_delete=models.SET_NULL, null=True, blank=True, related_name='expenses', help_text='Файл, из которого была импортирована эта транзакция')

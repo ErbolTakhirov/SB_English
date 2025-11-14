@@ -95,27 +95,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Получить ключ можно на https://openrouter.ai/keys
 # 
 # Доступные модели OpenRouter (от дешевых к дорогим):
+# БЕСПЛАТНЫЕ МОДЕЛИ (free tier):
+# - deepseek-chat-v3.1:free (рекомендуется: бесплатная, качественная)
+# - qwen3-coder-480b-a35b:free (бесплатная, для кода)
+# - google/gemini-2.0-flash-exp:free (экспериментальная)
+# 
+# ПЛАТНЫЕ МОДЕЛИ (от дешевых к дорогим):
 # - mistralai/mistral-7b-instruct (самая дешевая, ~$0.10/1M токенов)
 # - qwen/qwen-2.5-7b-instruct (очень дешевая, хорошее качество)
-# - google/gemini-2.0-flash-exp (дешевая и быстрая, экспериментальная)
 # - google/gemini-pro-1.5-flash (дешевая и быстрая, стабильная)
 # - openai/gpt-4o-mini (рекомендуется: дешевая и быстрая, ~$0.15/1M токенов)
 # - openai/gpt-4o (более мощная, дороже)
 # - anthropic/claude-3-haiku (быстрая и качественная)
 # 
 # Список всех моделей: https://openrouter.ai/models
-# ВАЖНО: Для экономии используйте модели с меньшим потреблением токенов!
+# ВАЖНО: Для экономии используйте бесплатные модели или модели с меньшим потреблением токенов!
 # ============================================================================
-LLM_API_KEY = os.getenv('LLM_API_KEY', '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')
+LLM_API_KEY = os.getenv('LLM_API_KEY', '')
 LLM_API_URL = os.getenv('LLM_API_URL', 'https://openrouter.ai/api/v1/chat/completions')
-# Явно указываем правильную модель (переопределяет переменную окружения если она неправильная)
-LLM_MODEL = os.getenv('LLM_MODEL', 'openai/gpt-4o-mini')  # Стабильная и дешевая модель по умолчанию
-# Проверка: если модель содержит неправильный формат, используем дефолт
-# Поддерживаемые префиксы моделей OpenRouter
-valid_prefixes = ('openai/', 'google/', 'anthropic/', 'meta/', 'mistralai/', 'qwen/', 'microsoft/', 'perplexity/', 'cohere/')
-if 'openchat' in LLM_MODEL.lower() or not LLM_MODEL.startswith(valid_prefixes):
-    print(f"⚠️  Предупреждение: Модель '{LLM_MODEL}' может быть некорректной. Используется 'openai/gpt-4o-mini'")
-    LLM_MODEL = 'openai/gpt-4o-mini'  # Стабильная модель по умолчанию
+# БЕСПЛАТНАЯ МОДЕЛЬ ПО УМОЛЧАНИЮ
+# Можно изменить через переменную окружения LLM_MODEL
+LLM_MODEL = os.getenv('LLM_MODEL', 'deepseek-chat-v3.1:free')  # Бесплатная модель по умолчанию
 
 # Максимальное количество токенов в ответе (уменьшаем для экономии)
 # Рекомендуемые значения: 

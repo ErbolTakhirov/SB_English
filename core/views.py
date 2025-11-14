@@ -1080,7 +1080,7 @@ def user_settings_api(request):
             'auto_remove_duplicates': bool(getattr(profile, 'auto_remove_duplicates', False)),
             'anonymize_enabled': bool(request.session.get('anonymize_enabled', True)),
             'llm_provider': request.session.get('llm_provider', 'openrouter'),
-            'llm_model': request.session.get('llm_model', getattr(settings, 'LLM_MODEL', 'openai/gpt-4o-mini')),
+            'llm_model': request.session.get('llm_model', getattr(settings, 'LLM_MODEL', 'deepseek-chat-v3.1:free')),
         })
 
     if request.method == 'POST':
@@ -1205,9 +1205,23 @@ class IncomeCreateView(CreateView):
     template_name = 'income_form.html'
     success_url = reverse_lazy('income_list')
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Получаем существующие категории из БД для текущего пользователя
+        existing_categories = Income.objects.filter(
+            user=self.request.user
+        ).values_list('category', flat=True).distinct().order_by('category')
+        context['existing_categories'] = [cat for cat in existing_categories if cat]
+        return context
+    
     def form_valid(self, form):
         form.instance.user = self.request.user
-        return super().form_valid(form)
+        super().form_valid(form)
+        # Редирект обратно на форму с параметром success для показа уведомления и автосброса
+        from django.http import HttpResponseRedirect
+        from django.urls import reverse
+        messages.success(self.request, 'Доход успешно добавлен!')
+        return HttpResponseRedirect(f"{reverse('income_create')}?success=1")
 
 
 class IncomeUpdateView(UpdateView):
@@ -1218,6 +1232,20 @@ class IncomeUpdateView(UpdateView):
     
     def get_queryset(self):
         return Income.objects.filter(user=self.request.user)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Получаем существующие категории из БД для текущего пользователя
+        existing_categories = Income.objects.filter(
+            user=self.request.user
+        ).values_list('category', flat=True).distinct().order_by('category')
+        context['existing_categories'] = [cat for cat in existing_categories if cat]
+        return context
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, 'Доход успешно обновлен!')
+        return response
 
 
 class IncomeDeleteView(DeleteView):
@@ -1279,6 +1307,15 @@ class ExpenseCreateView(CreateView):
     template_name = 'expense_form.html'
     success_url = reverse_lazy('expense_list')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Получаем существующие категории из БД для текущего пользователя
+        existing_categories = Expense.objects.filter(
+            user=self.request.user
+        ).values_list('category', flat=True).distinct().order_by('category')
+        context['existing_categories'] = [cat for cat in existing_categories if cat]
+        return context
+
     def form_valid(self, form):
         form.instance.user = self.request.user
         auto = form.cleaned_data.get('auto_categorize')
@@ -1287,7 +1324,12 @@ class ExpenseCreateView(CreateView):
             suggested = predictor.predict_category(form.cleaned_data.get('description') or '')
             if suggested:
                 form.instance.category = suggested
-        return super().form_valid(form)
+        super().form_valid(form)
+        # Редирект обратно на форму с параметром success для показа уведомления и автосброса
+        from django.http import HttpResponseRedirect
+        from django.urls import reverse
+        messages.success(self.request, 'Расход успешно добавлен!')
+        return HttpResponseRedirect(f"{reverse('expense_create')}?success=1")
 
 
 class ExpenseUpdateView(UpdateView):
@@ -1298,6 +1340,20 @@ class ExpenseUpdateView(UpdateView):
     
     def get_queryset(self):
         return Expense.objects.filter(user=self.request.user)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Получаем существующие категории из БД для текущего пользователя
+        existing_categories = Expense.objects.filter(
+            user=self.request.user
+        ).values_list('category', flat=True).distinct().order_by('category')
+        context['existing_categories'] = [cat for cat in existing_categories if cat]
+        return context
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, 'Расход успешно обновлен!')
+        return response
 
 
 class ExpenseDeleteView(DeleteView):
