@@ -7,7 +7,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret-key-change-me')
-DEBUG = os.getenv('DJANGO_DEBUG', '0') == '1'
+DEBUG = True  # Временно включено для отладки
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
@@ -112,10 +112,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ВАЖНО: Для экономии используйте бесплатные модели или модели с меньшим потреблением токенов!
 # ============================================================================
 LLM_API_KEY = os.getenv('LLM_API_KEY', '')
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', '')
 LLM_API_URL = os.getenv('LLM_API_URL', 'https://openrouter.ai/api/v1/chat/completions')
 # БЕСПЛАТНАЯ МОДЕЛЬ ПО УМОЛЧАНИЮ
 # Можно изменить через переменную окружения LLM_MODEL
 LLM_MODEL = os.getenv('LLM_MODEL', 'deepseek-chat-v3.1:free')  # Бесплатная модель по умолчанию
+
+# Авто-коррекция неверных названий моделей
+if LLM_MODEL == 'deepseek-chat-v3.1:free':
+    LLM_MODEL = 'deepseek/deepseek-r1:free'  # Правильный ID для бесплатной версии DeepSeek R1
+
 
 # Максимальное количество токенов в ответе (уменьшаем для экономии)
 # Рекомендуемые значения: 

@@ -6,6 +6,8 @@ urlpatterns = [
     # Главная страница и workspace
     path('', views.workspace, name='workspace'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('demo/', views.ai_demo, name='ai_demo'),  # 🚀 Демо WOW-фич
+
     
     # API endpoints
     path('records/', views.records_api, name='records_api'),
@@ -13,6 +15,13 @@ urlpatterns = [
     path('api/dashboard/data/', views.dashboard_data_api, name='dashboard_data_api'),
     path('api/upload/', views.upload_api, name='upload_api'),
     path('ai/chat/', views.ai_chat_api, name='ai_chat_api'),
+    
+    # 🚀 NEW: WOW-FEATURES для хакатона
+    path('api/ai/chat/v2/', views.ai_chat_api_v2, name='ai_chat_v2'),  # Новый улучшенный API
+    path('api/ai/chat/stream/', views.ai_chat_streaming, name='ai_chat_streaming'),  # Streaming ответов
+    path('api/ai/confidence/', views.ai_confidence_score, name='ai_confidence'),  # Confidence Score
+    path('api/ai/health-score/', views.financial_health_score, name='health_score'),  # Health Score
+    path('api/ai/reasoning/', views.ai_explain_reasoning, name='ai_reasoning'),  # Chain of Thought
     
     # Авторизация
     path('register/', views.register_view, name='register'),

@@ -16,6 +16,11 @@ from core.utils.analytics import (
     detect_anomalies_automatically,
 )
 
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
+
 
 # ============================================================================
 # КОНФИГУРАЦИЯ API LLM
@@ -215,7 +220,8 @@ def chat_with_context(
     check_duplicates: bool = True,
     anonymize: bool = True,
     use_local: bool = False,
-    user=None
+    user=None,
+    system_instruction: Optional[str] = None
 ) -> str:
     """
     Chat-style call с поддержкой истории и проверкой на повторения.
@@ -228,6 +234,7 @@ def chat_with_context(
         anonymize: если True, анонимизирует данные перед отправкой в облако
         use_local: если True, использует локальную модель (Ollama)
         user: User объект для получения финансовой памяти
+        system_instruction: Кастомный системный промпт (переопределяет стандартный)
     
     Returns:
         Ответ от LLM
@@ -236,25 +243,72 @@ def chat_with_context(
     if use_local:
         return _call_local_llm(messages, user_data, user=user)
     
-    # Получаем финансовую память пользователя (таблицы, summary, alerts)
-    memory = None
-    if user:
-        try:
-            memory = get_user_financial_memory(user, force_refresh=False)
-        except Exception:
-            pass
+    # ------------------------------------------------------------------
+    # Определяем, нужно ли использовать Google Gemini напрямую
+    # ------------------------------------------------------------------
+    model_name = getattr(settings, 'LLM_MODEL', 'deepseek-chat-v3.1:free').lower()
+    has_google_key = bool(getattr(settings, 'GOOGLE_API_KEY', ''))
+    has_llm_key = bool(getattr(settings, 'LLM_API_KEY', ''))
     
-    # Формируем системный промпт с таблицами и summary из памяти
-    if memory:
-        # Используем новый формат промпта с таблицами
-        sys_prompt = build_system_prompt(memory, extra_context=user_data or "")
-    else:
-        # Fallback на старый формат, если памяти нет
-        if anonymize and user_data:
-            anonymized_data = anonymize_csv_data(user_data)
+    # Инициализируем переменную memory
+    memory = None
+
+    # Используем Gemini напрямую если:
+    # 1. Выбрана модель Gemini И есть Google API ключ (даже если есть OpenRouter ключ - прямой доступ надежнее)
+    # 2. НЕТ OpenRouter ключа, но есть Google API ключ (fallback)
+    is_gemini_model = 'gemini' in model_name
+    use_google_direct = (is_gemini_model and has_google_key) or (has_google_key and not has_llm_key)
+    
+    if use_google_direct:
+        # Для Gemini нам нужен sys_prompt отдельно
+        if system_instruction:
+            sys_prompt = system_instruction
         else:
-            anonymized_data = user_data
-        sys_prompt = settings.LLM_PROMPT_TEMPLATE.format(user_data=anonymized_data or "Нет данных")
+            # Получаем финансовую память
+            memory = None
+            if user:
+                try:
+                    memory = get_user_financial_memory(user, force_refresh=False)
+                except Exception:
+                    pass
+            
+            if memory:
+                 sys_prompt = build_system_prompt(memory, extra_context=user_data or "")
+            else:
+                 if anonymize and user_data:
+                     anonymized_data = anonymize_csv_data(user_data)
+                 else:
+                     anonymized_data = user_data
+                 sys_prompt = settings.LLM_PROMPT_TEMPLATE.format(user_data=anonymized_data or "Нет данных")
+        
+        if check_duplicates and session:
+            sys_prompt += "\n\nВАЖНО: Не повторяй ранее данные советы в этой сессии. Всегда давай новые, уникальные рекомендации."
+            
+        return _call_google_gemini(messages, sys_prompt)
+    
+    # Если передан кастомный системный промпт, используем его
+    if system_instruction:
+        sys_prompt = system_instruction
+    else:
+        # Получаем финансовую память пользователя (таблицы, summary, alerts)
+        memory = None
+        if user:
+            try:
+                memory = get_user_financial_memory(user, force_refresh=False)
+            except Exception:
+                pass
+        
+        # Формируем системный промпт с таблицами и summary из памяти
+        if memory:
+            # Используем новый формат промпта с таблицами
+            sys_prompt = build_system_prompt(memory, extra_context=user_data or "")
+        else:
+            # Fallback на старый формат, если памяти нет
+            if anonymize and user_data:
+                anonymized_data = anonymize_csv_data(user_data)
+            else:
+                anonymized_data = user_data
+            sys_prompt = settings.LLM_PROMPT_TEMPLATE.format(user_data=anonymized_data or "Нет данных")
     
     # Добавляем инструкцию о недопустимости повторений
     if check_duplicates and session:
@@ -300,64 +354,68 @@ def chat_with_context(
     # Получаем модель из настроек или параметров запроса
     model = getattr(settings, 'LLM_MODEL', 'deepseek-chat-v3.1:free')
     
-    payload = {
-        "model": model,  # Явно указываем модель в параметрах запроса
-        "messages": full_messages,
-        "max_tokens": getattr(settings, 'LLM_MAX_TOKENS', 4000),  # Ограничиваем токены для экономии
-    }
+    models_to_try = [model]
     
-    try:
-        resp = requests.post(settings.LLM_API_URL, headers=_headers(), json=payload, timeout=60)
+    # Добавляем fallback модели, если используемая модель бесплатная или экспериментальная
+    if ':free' in model or 'exp' in model:
+        fallbacks = [
+            'google/gemini-2.0-flash-exp:free',
+            'deepseek/deepseek-r1:free',
+            'meta-llama/llama-3-8b-instruct:free',
+            'deepseek/deepseek-chat',  # Cheap paid as last resort
+        ]
+        for fb in fallbacks:
+            if fb != model and fb not in models_to_try:
+                models_to_try.append(fb)
+    
+    last_error = ""
+    
+    for current_model in models_to_try:
+        payload = {
+            "model": current_model,
+            "messages": full_messages,
+            "max_tokens": getattr(settings, 'LLM_MAX_TOKENS', 4000),
+        }
         
-        # Улучшенная обработка ошибок
-        if resp.status_code != 200:
-            error_detail = f"HTTP {resp.status_code}"
-            try:
-                error_data = resp.json()
-                if 'error' in error_data:
-                    error_msg = error_data['error'].get('message', str(error_data['error']))
-                    error_detail = error_msg
-                    # Проверяем на лимиты free tier
-                    if 'limit' in error_msg.lower() or 'quota' in error_msg.lower() or 'free' in error_msg.lower():
-                        error_detail = f"⚠️ Достигнут лимит бесплатного тарифа. {error_msg}\n\nПопробуйте позже или используйте платную модель в настройках."
-                elif 'message' in error_data:
-                    error_detail = error_data['message']
-            except:
-                error_detail = resp.text[:200] if resp.text else f"HTTP {resp.status_code}"
+        try:
+            # print(f"Trying model: {current_model}")
+            resp = requests.post(settings.LLM_API_URL, headers=_headers(), json=payload, timeout=60)
             
-            return f"[AI ошибка] {error_detail}\n\nПроверьте:\n- Правильность API ключа в settings.py\n- Наличие баланса на OpenRouter (для бесплатных моделей может быть лимит)\n- Формат запроса"
-        
-        data = resp.json()
-        
-        # Проверка структуры ответа
-        if 'choices' not in data or not data['choices']:
-            return "[AI ошибка] Неожиданный формат ответа от API. Проверьте настройки модели."
-        
-        reply = data['choices'][0]['message']['content']
-        
-        # Проверяем на повторения, если включена проверка
-        if check_duplicates and session:
-            if _check_for_duplicates(reply, session):
-                # Если найдены повторения, добавляем дополнительную инструкцию
-                sys_prompt += "\n\nОбнаружены повторения в предыдущих ответах. Пожалуйста, дай совершенно новый, уникальный совет, который еще не был дан в этой сессии."
-                full_messages = [{"role": "system", "content": sys_prompt}] + messages
-                payload['messages'] = full_messages
-                # Повторный запрос
-                resp = requests.post(settings.LLM_API_URL, headers=_headers(), json=payload, timeout=60)
-                if resp.status_code != 200:
-                    # Если повторный запрос тоже не удался, возвращаем оригинальный ответ
-                    return reply
+            if resp.status_code == 200:
                 data = resp.json()
                 if 'choices' in data and data['choices']:
                     reply = data['choices'][0]['message']['content']
-        
-        return reply
-    except requests.exceptions.RequestException as ex:
-        return f"[AI ошибка] Ошибка сети: {ex}\n\nПроверьте подключение к интернету и доступность API."
-    except KeyError as ex:
-        return f"[AI ошибка] Неожиданный формат ответа: отсутствует поле {ex}\n\nПроверьте настройки модели и API."
-    except Exception as ex:
-        return f"[AI ошибка] Неожиданная ошибка: {ex}\n\nПроверьте логи сервера для деталей."
+                    
+                    # Проверяем на повторения, если включена проверка
+                    if check_duplicates and session:
+                        if _check_for_duplicates(reply, session):
+                            sys_prompt += "\n\nОбнаружены повторения в предыдущих ответах. Пожалуйста, дай совершенно новый, уникальный совет, который еще не был дан в этой сессии."
+                            full_messages = [{"role": "system", "content": sys_prompt}] + messages
+                            payload['messages'] = full_messages
+                            # Повторный запрос к той же модели
+                            resp_retry = requests.post(settings.LLM_API_URL, headers=_headers(), json=payload, timeout=60)
+                            if resp_retry.status_code == 200:
+                                data_retry = resp_retry.json()
+                                if 'choices' in data_retry and data_retry['choices']:
+                                    return data_retry['choices'][0]['message']['content']
+                    
+                    return reply
+            
+            # Если ошибка, сохраняем и пробуем следующую
+            try:
+                err_data = resp.json()
+                err_msg = err_data.get('error', {}).get('message', str(err_data))
+                last_error = f"{current_model}: {err_msg}"
+            except:
+                last_error = f"{current_model}: HTTP {resp.status_code}"
+                
+        except Exception as e:
+            last_error = f"{current_model}: {str(e)}"
+            continue
+            
+    # Если ни одна модель не сработала
+    return f"[AI Error] Все модели недоступны. Последняя ошибка: {last_error}"
+
 
 
 def _call_local_llm(messages: List[Dict[str, str]], user_data: str = "", user=None) -> str:
@@ -419,3 +477,58 @@ def _call_local_llm(messages: List[Dict[str, str]], user_data: str = "", user=No
         return f"[Локальная LLM ошибка] {ex}"
 
 
+
+def _call_google_gemini(messages: List[Dict[str, str]], sys_prompt: str) -> str:
+    """
+    Вызывает Google Gemini напрямую через SDK.
+    """
+    if not genai:
+        return "[System Error] google-generativeai package not installed."
+        
+    try:
+        genai.configure(api_key=settings.GOOGLE_API_KEY)
+        
+        # Определяем модель
+        current_model = getattr(settings, 'LLM_MODEL', 'gemini-1.5-flash')
+        model_name = 'gemini-1.5-flash' # Default safe
+        
+        # Пытаемся извлечь имя модели, если оно задано в формате provider/model или просто model
+        if 'gemini' in current_model.lower():
+            if '/' in current_model:
+                parts = current_model.split('/')
+                # Берем последнюю часть, например 'gemini-2.0-flash-exp'
+                model_name = parts[-1]
+            else:
+                model_name = current_model
+                
+        # Очистка имени модели от лишних суффиксов (например :free)
+        if ':' in model_name:
+            model_name = model_name.split(':')[0]
+            
+        # Initialization
+        model = genai.GenerativeModel(model_name, system_instruction=sys_prompt)
+        
+        # Prepare history
+        # Gemini expects history bits as {'role': 'user'|'model', 'parts': [...]}
+        gemini_history = []
+        
+        # Process messages except the last one (which is the new prompt)
+        # Note: 'assistant' -> 'model'
+        for msg in messages[:-1]:
+            role = 'user' if msg['role'] == 'user' else 'model'
+            gemini_history.append({'role': role, 'parts': [msg['content']]})
+            
+        last_msg = messages[-1]['content'] if messages else ""
+        
+        if not last_msg and not gemini_history:
+             return "Пустой запрос."
+
+        chat = model.start_chat(history=gemini_history)
+        
+        response = chat.send_message(last_msg)
+        return response.text
+        
+    except Exception as ex:
+        import traceback
+        traceback.print_exc()
+        return f"[Gemini API Error] {str(ex)}\n\nУбедитесь, что GOOGLE_API_KEY верен и модель доступна."

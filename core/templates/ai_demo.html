@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 AI Features Demo - SB Finance</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .feature-description {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .demo-output {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .demo-output.active {
+            display: block;
+        }
+
+        .thinking {
+            color: #667eea;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            transition: width 1s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        .health-score {
+            font-size: 72px;
+            font-weight: 900;
+            text-align: center;
+            margin: 20px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .component-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .component-label {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+
+        .component-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .reasoning-step {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #48bb78;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .step-icon {
+            font-size: 32px;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .step-title {
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .step-details {
+            color: #4a5568;
+            margin-top: 10px;
+        }
+
+        .chat-input-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 40px;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AI Features Demo</h1>
+            <p>Демонстрация WOW-фич для хакатона</p>
+        </div>
+
+        <div class="chat-input-container">
+            <h3 style="margin-bottom: 15px;">💬 Попробуйте спросить AI:</h3>
+            <textarea class="chat-input" id="userQuery" rows="3"
+                placeholder="Например: Почему так выросли расходы на маркетинг в ноябре?">Как улучшить мою финансовую ситуацию?</textarea>
+        </div>
+
+        <div class="features-grid">
+            <!-- Feature 1: Streaming Responses -->
+            <div class="feature-card">
+                <div class="feature-icon">🔴</div>
+                <div class="feature-title">Real-time Streaming</div>
+                <div class="feature-description">
+                    AI генерирует ответ в реальном времени, как в ChatGPT.
+                    Видно как AI "думает" и формирует мысли.
+                </div>
+                <button class="btn" onclick="demoStreaming()">
+                    Запустить Demo
+                </button>
+                <div id="streamingOutput" class="demo-output"></div>
+            </div>
+
+            <!-- Feature 2: Confidence Score -->
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-title">Confidence Score</div>
+                <div class="feature-description">
+                    AI показывает насколько уверен в своем ответе (0-100%).
+                    Зависит от объема данных и истории.
+                </div>
+                <button class="btn" onclick="demoConfidence()">
+                    Рассчитать Confidence
+                </button>
+                <div id="confidenceOutput" class="demo-output"></div>
+            </div>
+
+            <!-- Feature 3: Financial Health Score -->
+            <div class="feature-card">
+                <div class="feature-icon">🏆</div>
+                <div class="feature-title">Financial Health Score</div>
+                <div class="feature-description">
+                    Единая метрика финансового здоровья (0-100) на основе 4 компонентов.
+                    С breakdown по каждому компоненту.
+                </div>
+                <button class="btn" onclick="demoHealthScore()">
+                    Показать Health Score
+                </button>
+                <div id="healthOutput" class="demo-output"></div>
+            </div>
+
+            <!-- Feature 4: Chain of Thought -->
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <div class="feature-title">Chain of Thought</div>
+                <div class="feature-description">
+                    Прозрачность AI reasoning. Видно какие шаги AI выполняет для анализа.
+                </div>
+                <button class="btn" onclick="demoReasoning()">
+                    Показать Reasoning
+                </button>
+                <div id="reasoningOutput" class="demo-output"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';  // Adjust if needed
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        function getQuery() {
+            return document.getElementById('userQuery').value || 'Анализируй мои финансы';
+        }
+
+        async function demoStreaming() {
+            const output = document.getElementById('streamingOutput');
+            const btn = event.target;
+
+            output.innerHTML = '';
+            output.classList.add('active');
+            btn.disabled = true;
+            btn.textContent = 'Идет запрос...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/ai/chat/stream/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ message: getQuery() })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = JSON.parse(line.slice(6));
+
+                            if (data.type === 'thinking') {
+                                output.innerHTML += `<div class="thinking">${data.message}</div>`;
+                            } else if (data.type === 'content') {
+                                output.innerHTML += `<span>${data.message}</span>`;
+                            } else if (data.type === 'done') {
+                                output.innerHTML += `<div style="margin-top: 20px; padding: 15px; background: #e6fffa; border-radius: 10px; color: #047857;">
+                                    ✅ Готово! Query Type: ${data.metadata.query_type}
+                                </div>`;
+                            }
+
+                            output.scrollTop = output.scrollHeight;
+                        }
+                    }
+                }
+            } catch (error) {
+                output.innerHTML = `<div style="color: red;">❌ Ошибка: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Запустить еще раз';
+            }
+        }
+
+        async function demoConfidence() {
+            const output = document.getElementById('confidenceOutput');
+            const btn = event.target;
+
+            output.innerHTML = '<div class="loading">Анализирую данные...</div>';
+            output.classList.add('active');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/ai/confidence/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ message: getQuery() })
+                });
+
+                const data = await response.json();
+
+                output.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin: 20px 0;">
+                            ${data.icon}
+                        </div>
+                        <div style="font-size: 24px; font-weight: 700; margin-bottom: 10px;">
+                            ${data.message}
+                        </div>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: ${data.confidence}%;">
+                            ${data.confidence}%
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; font-size: 14px; color: #718096;">
+                        <strong>Детали:</strong><br>
+                        • Транзакций: ${data.details.transactions}<br>
+                        • Дней истории: ${data.details.days_history}<br>
+                        • Уровень: ${data.level}
+                    </div>
+                `;
+            } catch (error) {
+                output.innerHTML = `<div style="color: red;">❌ Ошибка: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function demoHealthScore() {
+            const output = document.getElementById('healthOutput');
+            const btn = event.target;
+
+            output.innerHTML = '<div class="loading">Рассчитываю Health Score...</div>';
+            output.classList.add('active');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/ai/health-score/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({})
+                });
+
+                const data = await response.json();
+
+                output.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">${data.emoji}</div>
+                        <div class="health-score">${data.score}</div>
+                        <div style="font-size: 32px; font-weight: 700; color: #667eea; margin-bottom: 10px;">
+                            Grade: ${data.grade}
+                        </div>
+                        <div style="font-size: 18px; color: #4a5568; margin-bottom: 30px;">
+                            ${data.message}
+                        </div>
+                    </div>
+                    <div class="components-grid">
+                        <div class="component-item">
+                            <div class="component-label">Savings Rate</div>
+                            <div class="component-value">${data.components.savings_rate.score}/${data.components.savings_rate.max}</div>
+                        </div>
+                        <div class="component-item">
+                            <div class="component-label">Income Stability</div>
+                            <div class="component-value">${data.components.income_stability.score}/${data.components.income_stability.max}</div>
+                        </div>
+                        <div class="component-item">
+                            <div class="component-label">Diversification</div>
+                            <div class="component-value">${data.components.diversification.score}/${data.components.diversification.max}</div>
+                        </div>
+                        <div class="component-item">
+                            <div class="component-label">Expense Control</div>
+                            <div class="component-value">${data.components.expense_control.score}/${data.components.expense_control.max}</div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                output.innerHTML = `<div style="color: red;">❌ Ошибка: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function demoReasoning() {
+            const output = document.getElementById('reasoningOutput');
+            const btn = event.target;
+
+            output.innerHTML = '<div class="loading">Анализирую reasoning chain...</div>';
+            output.classList.add('active');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/ai/reasoning/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({ message: getQuery() })
+                });
+
+                const data = await response.json();
+
+                let html = '';
+                data.reasoning_chain.forEach(step => {
+                    html += `
+                        <div class="reasoning-step">
+                            <div class="step-header">
+                                <div class="step-number">${step.step}</div>
+                                <div class="step-icon">${step.icon}</div>
+                                <div class="step-title">${step.title}</div>
+                            </div>
+                            <div class="step-details">${step.details}</div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div style="margin-top: 20px; padding: 20px; background: #ebf4ff; border-radius: 10px;">
+                        <strong>Итого:</strong><br>
+                        • Всего шагов: ${data.total_steps}<br>
+                        • Уверенность: ${data.confidence}%<br>
+                        • Проанализировано точек данных: ${data.data_points_analyzed}
+                    </div>
+                `;
+
+                output.innerHTML = html;
+            } catch (error) {
+                output.innerHTML = `<div style="color: red;">❌ Ошибка: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // Auto-load one demo on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelector('.features-grid .feature-card:nth-child(2) .btn').click();
+            }, 500);
+        });
+    </script>
+</body>
+
+</html>

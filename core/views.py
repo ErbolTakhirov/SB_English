@@ -48,6 +48,15 @@ from .utils.analytics import (
 )
 from django.views.decorators.csrf import csrf_exempt
 
+# 🚀 NEW: Импорты для WOW-features
+from core.ai.views import ai_chat_api_v2
+from core.ai.wow_features import (
+    ai_chat_streaming,
+    ai_confidence_score,
+    financial_health_score,
+    ai_explain_reasoning,
+)
+
 
 def _render_plot_to_base64(fig) -> str:
     buf = io.BytesIO()
@@ -151,6 +160,17 @@ def workspace(request):
     графиков и markdown ответов.
     """
     return render(request, 'workspace.html', {
+        'user': request.user
+    })
+
+
+@login_required
+def ai_demo(request):
+    """
+    🚀 Демо-страница WOW-features для хакатона.
+    Показывает все новые AI возможности.
+    """
+    return render(request, 'ai_demo.html', {
         'user': request.user
     })
 
@@ -959,16 +979,81 @@ def ai_chat_api(request):
     # Добавляем текущее сообщение
     history_messages.append({'role': 'user', 'content': msg})
     
-    # КРИТИЧНО: Вызываем LLM с передачей user для получения финансовой памяти (таблицы, summary)
-    reply = chat_with_context(
-        history_messages,
-        user_data=session_memory_block,  # Дополнительный контекст о файлах сессии
-        session=session,
-        check_duplicates=True,
-        anonymize=anonymize,
-        use_local=use_local,
-        user=request.user  # КРИТИЧНО: передаем user для получения таблиц и summary
-    )
+    # 🚀 NEW: Используем улучшенную систему с query analyzer + context builder
+    try:
+        from core.ai.advisor import get_financial_advice
+        from core.ai.query_analyzer import analyze_query
+        
+        # Анализируем запрос
+        query_analysis = analyze_query(msg)
+        query_type = query_analysis.get('query_type', 'general')
+        
+        # Получаем улучшенный ответ
+        ai_result = get_financial_advice(
+            user=request.user,
+            query=msg,
+            session=session,
+            use_local=use_local,
+            anonymize=anonymize
+        )
+        
+        reply = ai_result['response']
+        context_used = ai_result.get('context_used', {})
+        
+    except Exception as e:
+        # Fallback на старую систему если что-то пошло не так
+        print(f"Ошибка в новой AI системе: {e}, использую fallback")
+        reply = chat_with_context(
+            history_messages,
+            user_data=session_memory_block,
+            session=session,
+            check_duplicates=True,
+            anonymize=anonymize,
+            use_local=use_local,
+            user=request.user
+        )
+        query_type = 'general'
+        context_used = {}
+    
+    # 🎯 NEW: Рассчитываем confidence score
+    confidence_data = None
+    try:
+        from core.ai.wow_features import ai_confidence_score as calc_confidence
+        from django.test import RequestFactory
+        
+        # Создаем mock request для расчета confidence
+        factory = RequestFactory()
+        mock_request = factory.post('/api/ai/confidence/', 
+                                   data=json.dumps({'message': msg}),
+                                   content_type='application/json')
+        mock_request.user = request.user
+        
+        confidence_response = calc_confidence(mock_request)
+        confidence_data = json.loads(confidence_response.content)
+    except Exception as e:
+        print(f"Ошибка расчета confidence: {e}")
+        confidence_data = {
+            'confidence': 75,
+            'level': 'medium',
+            'icon': '🟡',
+            'message': 'Средняя уверенность'
+        }
+    
+    # 🏆 NEW: Рассчитываем health score (только если релевантно)
+    health_score_data = None
+    if query_type in ['advice', 'general', 'trends']:
+        try:
+            from core.ai.wow_features import financial_health_score as calc_health
+            
+            mock_request = factory.post('/api/ai/health-score/',
+                                       data=json.dumps({}),
+                                       content_type='application/json')
+            mock_request.user = request.user
+            
+            health_response = calc_health(mock_request)
+            health_score_data = json.loads(health_response.content)
+        except Exception as e:
+            print(f"Ошибка расчета health score: {e}")
     
     # Извлекаем actionable советы из ответа с поддержкой новых тегов
     actionable_items = parse_actionable_items(reply)
@@ -1044,7 +1129,7 @@ def ai_chat_api(request):
         pass
     
     # Возвращаем ответ с историей
-    return JsonResponse({
+    response_data = {
         'ok': True,
         'reply': reply,
         'session_id': session_id,
@@ -1056,7 +1141,16 @@ def ai_chat_api(request):
         'actionable_count': len(actionable_items),
         'active_advices': active_advices,  # Все активные (не выполненные) советы из сессии
         'active_advices_count': len(active_advices),
-    })
+        # 🚀 NEW: WOW-features
+        'query_type': query_type,  # Тип запроса (trends/anomalies/advice/etc)
+        'confidence': confidence_data,  # Confidence score данные
+    }
+    
+    # Добавляем health score если он был рассчитан
+    if health_score_data:
+        response_data['health_score'] = health_score_data
+    
+    return JsonResponse(response_data)
 
 
 @login_required
