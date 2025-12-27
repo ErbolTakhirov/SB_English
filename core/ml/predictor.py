@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from typing import Optional
 
+from django.conf import settings
+
 MODEL_PATH = Path(getattr(settings, 'MEDIA_ROOT', Path.cwd()) / 'ml' / 'expense_classifier.joblib')
 
 
