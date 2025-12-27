@@ -254,22 +254,50 @@
 
     <!-- Right Column -->
     <div class="col-lg-4">
-        <!-- Today's Spending -->
+        <!-- AI Financial Forecast -->
         <div class="teen-card p-4 mb-4">
-            <h3 class="h6 mb-3">
-                <i class="bi bi-calendar-day me-2"></i>Сегодня
+            <h3 class="h6 mb-3 d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-graph-up-arrow me-2 text-purple"></i>Прогноз на месяц</span>
+                <span class="badge bg-purple-soft text-purple rounded-pill small" id="forecastConfidence">--%</span>
             </h3>
-            <div class="row text-center">
-                <div class="col-6">
-                    <div class="stat-number" style="font-size: 1.8rem;">{{ today_expenses|floatformat:0 }}</div>
-                    <small class="text-muted">Потрачено</small>
+            <div class="row text-center mb-3">
+                <div class="col-6 border-end">
+                    <small class="text-muted d-block mb-1">Доход</small>
+                    <div class="fw-bold text-success" id="forecastIncome">--</div>
                 </div>
                 <div class="col-6">
-                    <div class="stat-number" style="font-size: 1.8rem;">{{ week_expenses|floatformat:0 }}</div>
-                    <small class="text-muted">За неделю</small>
+                    <small class="text-muted d-block mb-1">Расход</small>
+                    <div class="fw-bold text-primary" id="forecastExpense">--</div>
+                </div>
+            </div>
+            <div class="p-3 bg-light rounded-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="small text-muted">Ожидаемый остаток:</span>
+                    <span class="small fw-bold text-dark" id="forecastNet">--</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-success" id="forecastBar" style="width: 0%"></div>
                 </div>
             </div>
         </div>
+
+        <!-- Money Leaks Widget -->
+        <div class="teen-card p-4 mb-4">
+            <h3 class="h6 mb-3">
+                <i class="bi bi-droplet-half me-2 text-danger"></i>Утечки денег
+            </h3>
+            <div id="moneyLeaksList">
+                <div class="text-center py-3">
+                    <div class="spinner-border spinner-border-sm text-muted" role="status"></div>
+                </div>
+            </div>
+            <div class="mt-3 text-center">
+                <a href="{% url 'core:ai_insights' %}" class="btn btn-sm btn-outline-danger rounded-pill">
+                    Как исправить?
+                </a>
+            </div>
+        </div>
+
 
         <!-- Recent Insights -->
         <div class="teen-card p-4 mb-4">
@@ -517,6 +545,9 @@
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
+        // Load AI Forecast & Leaks
+        loadAIForecast();
+
         // Add confetti effect for achievements
         {% if achievements_unlocked and achievements_unlocked > 0 %}
         setTimeout(function () {
@@ -545,5 +576,67 @@
                 .catch(error => console.log('Stats refresh failed:', error));
         }, 30000);
     });
+
+    async function loadAIForecast() {
+        try {
+            const response = await fetch('/api/forecast/');
+            const data = await response.json();
+
+            // Update Forecast Widget
+            const forecast = data.forecast;
+            document.getElementById('forecastIncome').textContent = Math.round(forecast.predicted_income).toLocaleString();
+            document.getElementById('forecastExpense').textContent = Math.round(forecast.predicted_expense).toLocaleString();
+            document.getElementById('forecastConfidence').textContent = Math.round(forecast.confidence * 100) + '%';
+
+            const net = forecast.predicted_income - forecast.predicted_expense;
+            const netEl = document.getElementById('forecastNet');
+            const barEl = document.getElementById('forecastBar');
+
+            netEl.textContent = Math.round(net).toLocaleString() + ' сом';
+            if (net >= 0) {
+                netEl.className = 'small fw-bold text-success';
+                const percent = Math.min(100, (net / forecast.predicted_income) * 100);
+                barEl.style.width = percent + '%';
+                barEl.className = 'progress-bar bg-success';
+            } else {
+                netEl.className = 'small fw-bold text-danger';
+                barEl.style.width = '100%';
+                barEl.className = 'progress-bar bg-danger';
+            }
+
+            // Update Money Leaks
+            const leaksList = document.getElementById('moneyLeaksList');
+            leaksList.innerHTML = '';
+
+            if (data.money_leaks && data.money_leaks.length > 0) {
+                data.money_leaks.forEach(leak => {
+                    const el = document.createElement('div');
+                    el.className = 'd-flex justify-content-between align-items-center mb-2 pb-2 border-bottom';
+                    el.innerHTML = `
+                        <div>
+                            <span class="fw-medium small d-block">${leak.category}</span>
+                            <span class="text-xs text-muted">${leak.trend}</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="fw-bold text-danger small">-${Math.round(leak.amount).toLocaleString()}</span>
+                            <span class="d-block text-xs text-muted">${Math.round(leak.percentage)}% от всех трат</span>
+                        </div>
+                    `;
+                    leaksList.appendChild(el);
+                });
+            } else {
+                leaksList.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="bi bi-check-circle text-success mb-2" style="font-size: 1.5rem;"></i>
+                        <p class="small text-muted mb-0">Утечек не обнаружено!</p>
+                    </div>
+                `;
+            }
+
+        } catch (error) {
+            console.error('Failed to load forecast:', error);
+            document.getElementById('moneyLeaksList').innerHTML = '<p class="text-center small text-muted">Не удалось загрузить данные</p>';
+        }
+    }
 </script>
 {% endblock %}

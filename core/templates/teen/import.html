@@ -8,57 +8,194 @@
             <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
                 <div class="card-header bg-primary bg-gradient text-white p-4">
                     <h2 class="mb-0 h4"><i class="fas fa-magic me-2"></i> Умный Импорт Данных</h2>
-                    <p class="mb-0 small opacity-75">Просто вставь текст или список трат — AI разберется.</p>
+                    <p class="mb-0 small opacity-75">Просто вставь текст или загрузи файл — AI разберется.</p>
                 </div>
                 <div class="card-body p-4">
-                    <form method="POST">
-                        {% csrf_token %}
-                        <div class="mb-4">
-                            <label for="raw_data" class="form-label fw-bold">Вставь свои данные здесь</label>
-                            <textarea name="raw_data" id="raw_data" class="form-control rounded-3" rows="8"
-                                placeholder="Например:&#10;01.12 Магнит 450р&#10;02.12 Такси 320 сомов&#10;Подарок от бабушки 1000"></textarea>
-                            <div class="form-text mt-2">
-                                <i class="fas fa-info-circle me-1"></i> Можно копировать из банковских приложений, СМС
-                                или просто писать списком.
-                            </div>
-                        </div>
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm">
-                                <i class="fas fa-brain me-2"></i> Проанализировать через AI
+                    <!-- Alert Area -->
+                    <div id="alertArea"></div>
+
+                    <!-- Tabs for Text vs File -->
+                    <ul class="nav nav-pills mb-4 nav-justified" id="importTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active rounded-pill" id="text-tab" data-bs-toggle="pill"
+                                data-bs-target="#text-content" type="button" role="tab">
+                                <i class="fas fa-keyboard me-2"></i>Текст
                             </button>
-                        </div>
-                    </form>
-                </div>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link rounded-pill" id="file-tab" data-bs-toggle="pill"
+                                data-bs-target="#file-content" type="button" role="tab">
+                                <i class="fas fa-file-excel me-2"></i>Файл (CSV/Excel)
+                            </button>
+                        </li>
+                    </ul>
 
-                <div class="card-footer bg-light p-4">
-                    <h5 class="h6 mb-3">Как это работает?</h5>
-                    <div class="row g-3">
-                        <div class="col-md-4 text-center">
-                            <div class="avatar-sm bg-blue-soft text-primary rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
-                                style="width: 40px; height: 40px; background: rgba(13, 110, 253, 0.1);">
-                                <i class="fas fa-paste"></i>
-                            </div>
-                            <p class="small mb-0">Вставляешь текст</p>
+                    <div class="tab-content" id="myTabContent">
+                        <!-- Text Import -->
+                        <div class="tab-pane fade show active" id="text-content" role="tabpanel">
+                            <form id="textImportForm">
+                                {% csrf_token %}
+                                <div class="mb-4">
+                                    <label for="raw_data" class="form-label fw-bold">Вставь данные из СМС или
+                                        заметки</label>
+                                    <!-- ... (rest of form content) ... -->
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm"
+                                            id="textSubmitBtn">
+                                            <span class="normal-text"><i class="fas fa-brain me-2"></i>
+                                                Распознать</span>
+                                            <span class="loading-text d-none"><i
+                                                    class="fas fa-spinner fa-spin me-2"></i>
+                                                Думаю...</span>
+                                        </button>
+                                    </div>
+                            </form>
                         </div>
-                        <div class="col-md-4 text-center">
-                            <div class="avatar-sm bg-purple-soft text-purple rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
-                                style="width: 40px; height: 40px; background: rgba(111, 66, 193, 0.1); color: #6f42c1;">
-                                <i class="fas fa-microchip"></i>
-                            </div>
-                            <p class="small mb-0">AI определяет категории</p>
-                        </div>
-                        <div class="col-md-4 text-center">
-                            <div class="avatar-sm bg-green-soft text-success rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
-                                style="width: 40px; height: 40px; background: rgba(25, 135, 84, 0.1);">
-                                <i class="fas fa-check-double"></i>
-                            </div>
-                            <p class="small mb-0">Подтверждаешь и готово!</p>
-                        </div>
-                    </div>
-                </div>
+
+                        <!-- File Import -->
+                        <div class="tab-pane fade" id="file-content" role="tabpanel">
+                            <form id="fileImportForm" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="mb-4 text-center p-5 border-2 border-dashed rounded-3 bg-light"
+                                    id="dropZone">
+                                    <!-- ... (rest of file form) ... -->
+
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            // Robust CSRF Token Retrieval from DOM
+                                            function getCsrfToken() {
+                                                const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+                                                return tokenInput ? tokenInput.value : '';
+                                            }
+
+                                            // Text Import Handler
+                                            const textForm = document.getElementById('textImportForm');
+                                            const textBtn = document.getElementById('textSubmitBtn');
+
+                                            textForm.addEventListener('submit', async function (e) {
+                                                e.preventDefault();
+                                                const text = document.getElementById('raw_data').value;
+                                                const autoCategorize = document.getElementById('autoCategorizeText').checked;
+                                                const token = getCsrfToken();
+
+                                                if (!text.trim()) {
+                                                    showAlert('Пожалуйста, введите текст', 'warning');
+                                                    return;
+                                                }
+
+                                                setLoading(textBtn, true);
+
+                                                try {
+                                                    const response = await fetch('/api/import/text/', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'X-CSRFToken': token
+                                                        },
+                                                        body: JSON.stringify({
+                                                            text: text,
+                                                            auto_categorize: autoCategorize
+                                                        })
+                                                    });
+
+                                                    // Handle non-JSON responses (like 403 HTML page)
+                                                    const contentType = response.headers.get("content-type");
+                                                    if (!contentType || !contentType.includes("application/json")) {
+                                                        throw new Error("Server returned non-JSON response (likely 403 Forbidden or 500 Error)");
+                                                    }
+
+                                                    const data = await response.json();
+
+                                                    if (data.success) {
+                                                        let msg = `✅ Успешно! Доходы: ${data.incomes_created}, Расходы: ${data.expenses_created}`;
+                                                        if (data.review_needed > 0) {
+                                                            msg += `. <a href="{% url 'core:review_queue_page' %}" class="alert-link">Требуют проверки: ${data.review_needed}</a>`;
+                                                        }
+                                                        showAlert(msg, 'success');
+                                                        textForm.reset();
+
+                                                        if (data.review_needed > 0) {
+                                                            setTimeout(() => {
+                                                                window.location.href = "{% url 'core:review_queue_page' %}";
+                                                            }, 2000);
+                                                        }
+                                                    } else {
+                                                        showAlert('❌ Ошибка: ' + (data.error || 'Unknown error'), 'danger');
+                                                    }
+                                                } catch (error) {
+                                                    showAlert('❌ Ошибка сети: ' + error.message, 'danger');
+                                                    console.error(error);
+                                                } finally {
+                                                    setLoading(textBtn, false);
+                                                }
+                                            });
+
+                                            // ... (File input change & Drag-drop listeners remain same) ...
+
+                                            // File Submit
+                                            document.getElementById('fileImportForm').addEventListener('submit', async function (e) {
+                                                e.preventDefault();
+                                                const formData = new FormData(this);
+                                                const token = getCsrfToken();
+
+                                                // Append token manually if needed, or rely on header
+                                                // formData.append('csrfmiddlewaretoken', token); 
+
+                                                setLoading(fileSubmitBtn, true);
+
+                                                try {
+                                                    const response = await fetch('/api/upload/', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'X-CSRFToken': token
+                                                        },
+                                                        body: formData
+                                                    });
+
+                                                    const contentType = response.headers.get("content-type");
+                                                    if (!contentType || !contentType.includes("application/json")) {
+                                                        throw new Error("Server returned non-JSON response");
+                                                    }
+
+                                                    const data = await response.json();
+
+                                                    if (data.status === 'success') {
+                                                        showAlert('✅ Файл успешно загружен и обработан!', 'success');
+                                                        setTimeout(() => window.location.href = "{% url 'core:review_queue_page' %}", 1500);
+                                                    } else {
+                                                        showAlert('❌ Ошибка: ' + (data.message || 'Unknown error'), 'danger');
+                                                    }
+                                                } catch (error) {
+                                                    showAlert('❌ Ошибка загрузки: ' + error.message, 'danger');
+                                                    console.error(error);
+                                                } finally {
+                                                    setLoading(fileSubmitBtn, false);
+                                                }
+                                            });
+
+                                            // Helpers
+                                            function setLoading(btn, isLoading) {
+                                                if (isLoading) {
+                                                    btn.disabled = true;
+                                                    btn.querySelector('.normal-text').classList.add('d-none');
+                                                    btn.querySelector('.loading-text').classList.remove('d-none');
+                                                } else {
+                                                    btn.disabled = false;
+                                                    btn.querySelector('.normal-text').classList.remove('d-none');
+                                                    btn.querySelector('.loading-text').classList.add('d-none');
+                                                }
+                                            }
+
+                                            function showAlert(message, type) {
+                                                const alertArea = document.getElementById('alertArea');
+                                                alertArea.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+        `;
+                                            }
+                                        });
+                                    </script>
+                                    {% endblock %}

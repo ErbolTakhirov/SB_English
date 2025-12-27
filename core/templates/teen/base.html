@@ -8,359 +8,432 @@
 
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Overpass:wght@400;600;700&display=swap"
         rel="stylesheet">
 
-    <style>
-        :root {
-            --primary-color: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary-color: #8b5cf6;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --dark-color: #1f2937;
-            --light-color: #f9fafb;
-            --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
+    <!-- ... styles ... -->
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'core:dashboard' %}">
+                    <i class="bi bi-house me-1"></i>Главная
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'core:import_data' %}">
+                    <i class="bi bi-magic me-1"></i>Импорт
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'core:ai_insights' %}">
+                    <i class="bi bi-graph-up me-1"></i>Аналитика
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'core:goals' %}">
+                    <i class="bi bi-bullseye me-1"></i>Цели
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'core:ai_coach' %}">
+                    <i class="bi bi-chat-dots me-1"></i>AI Коуч
+                </a>
+            </li>
+        </ul>
+        <!-- ... -->
+        <!-- Quick Actions Modal -->
+        <div class="modal fade" id="quickActionsModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content teen-card">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title">
+                            <i class="bi bi-lightning me-2"></i>Быстрые действия
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-grid gap-3">
+                            <a href="{% url 'core:import_data' %}" class="btn btn-primary bg-gradient">
+                                <i class="bi bi-magic me-2"></i>Умный импорт
+                            </a>
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <a href="{% url 'core:expense_create' %}" class="btn btn-outline-danger w-100">
+                                        <i class="bi bi-receipt me-2"></i>Расход
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="{% url 'core:income_create' %}" class="btn btn-outline-success w-100">
+                                        <i class="bi bi-plus-circle me-2"></i>Доход
+                                    </a>
+                                </div>
+                            </div>
+                            <a href="{% url 'core:goals' %}" class="btn btn-outline-primary">
+                                <i class="bi bi-bullseye me-2"></i>Новая цель
+                            </a>
+                            <a href="{% url 'core:ai_coach' %}" class="btn btn-outline-primary">
+                                <i class="bi bi-chat-dots me-2"></i>Спросить AI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: var(--dark-color);
-        }
-
-        /* Navbar */
-        .teen-navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .navbar-brand {
-            font-weight: 800;
-            font-size: 1.5rem;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .nav-link {
-            font-weight: 500;
-            color: var(--dark-color) !important;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--primary-color) !important;
-            transform: translateY(-1px);
-        }
-
-        /* Cards */
-        .teen-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            box-shadow: var(--shadow-lg);
-            transition: all 0.3s ease;
-        }
-
-        .teen-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-xl);
-        }
-
-        /* Buttons */
-        .btn-primary {
-            background: var(--gradient-primary);
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            padding: 12px 24px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-success {
-            background: var(--gradient-success);
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            padding: 12px 24px;
-        }
-
-        .btn-outline-primary {
-            border: 2px solid var(--primary-color);
-            border-radius: 12px;
-            font-weight: 600;
-            padding: 10px 20px;
-            color: var(--primary-color);
-            background: transparent;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-primary:hover {
-            background: var(--primary-color);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        /* Stats Cards */
-        .stat-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: #6b7280;
-            font-weight: 500;
-            margin-top: 8px;
-        }
-
-        /* Progress Bars */
-        .progress {
-            height: 8px;
-            border-radius: 10px;
-            background: rgba(99, 102, 241, 0.1);
-        }
-
-        .progress-bar {
-            background: var(--gradient-primary);
-            border-radius: 10px;
-        }
-
-        /* Goals */
-        .goal-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            border-left: 4px solid var(--primary-color);
-            transition: all 0.3s ease;
-        }
-
-        .goal-card:hover {
-            transform: translateX(5px);
-        }
-
-        .goal-progress {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        /* Chat Interface */
-        .chat-container {
-            height: 400px;
-            overflow-y: auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 16px;
-            padding: 20px;
-        }
-
-        .chat-message {
-            margin-bottom: 16px;
-            animation: fadeInUp 0.5s ease;
-        }
-
-        .chat-message.user {
-            text-align: right;
-        }
-
-        .chat-bubble {
-            display: inline-block;
-            padding: 12px 16px;
-            border-radius: 18px;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-
-        .chat-bubble.user {
-            background: var(--gradient-primary);
-            color: white;
-        }
-
-        .chat-bubble.ai {
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--dark-color);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-        }
-
-        /* Achievements */
-        .achievement-badge {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 16px;
-            padding: 16px;
-            text-align: center;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .achievement-badge.earned {
-            border-color: var(--success-color);
-            background: rgba(16, 185, 129, 0.1);
-        }
-
-        .achievement-badge.available {
-            border-color: rgba(99, 102, 241, 0.3);
-            opacity: 0.7;
-        }
-
-        .achievement-icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
+        <style>
+            :root {
+                --primary-color: #6366f1;
+                --primary-dark: #4f46e5;
+                --secondary-color: #8b5cf6;
+                --success-color: #10b981;
+                --warning-color: #f59e0b;
+                --danger-color: #ef4444;
+                --dark-color: #1f2937;
+                --light-color: #f9fafb;
+                --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+                --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+                --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+                --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes bounce {
-
-            0%,
-            20%,
-            53%,
-            80%,
-            100% {
-                transform: translate3d(0, 0, 0);
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
             }
 
-            40%,
-            43% {
-                transform: translate3d(0, -10px, 0);
+            body {
+                font-family: 'Inter', sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                color: var(--dark-color);
             }
 
-            70% {
-                transform: translate3d(0, -5px, 0);
+            /* Navbar */
+            .teen-navbar {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                box-shadow: var(--shadow-sm);
             }
 
-            90% {
-                transform: translate3d(0, -2px, 0);
-            }
-        }
-
-        .bounce-animation {
-            animation: bounce 1s ease;
-        }
-
-        /* Floating Action Button */
-        .fab {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--gradient-primary);
-            color: white;
-            border: none;
-            font-size: 1.5rem;
-            box-shadow: var(--shadow-lg);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .fab:hover {
-            transform: scale(1.1);
-            box-shadow: var(--shadow-xl);
-        }
-
-        /* Demo Mode Indicator */
-        .demo-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--gradient-warning);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            z-index: 1000;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+            .navbar-brand {
+                font-weight: 800;
+                font-size: 1.5rem;
+                background: var(--gradient-primary);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
             }
 
-            70% {
-                box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+            .nav-link {
+                font-weight: 500;
+                color: var(--dark-color) !important;
+                transition: all 0.3s ease;
             }
 
-            100% {
-                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
-            }
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .stat-number {
-                font-size: 2rem;
+            .nav-link:hover {
+                color: var(--primary-color) !important;
+                transform: translateY(-1px);
             }
 
+            /* Cards */
             .teen-card {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 20px;
+                box-shadow: var(--shadow-lg);
+                transition: all 0.3s ease;
+            }
+
+            .teen-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-xl);
+            }
+
+            /* Buttons */
+            .btn-primary {
+                background: var(--gradient-primary);
+                border: none;
+                border-radius: 12px;
+                font-weight: 600;
+                padding: 12px 24px;
+                transition: all 0.3s ease;
+            }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-md);
+            }
+
+            .btn-success {
+                background: var(--gradient-success);
+                border: none;
+                border-radius: 12px;
+                font-weight: 600;
+                padding: 12px 24px;
+            }
+
+            .btn-outline-primary {
+                border: 2px solid var(--primary-color);
+                border-radius: 12px;
+                font-weight: 600;
+                padding: 10px 20px;
+                color: var(--primary-color);
+                background: transparent;
+                transition: all 0.3s ease;
+            }
+
+            .btn-outline-primary:hover {
+                background: var(--primary-color);
+                color: white;
+                transform: translateY(-2px);
+            }
+
+            /* Stats Cards */
+            .stat-card {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
+                border-radius: 16px;
+                padding: 24px;
+                text-align: center;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                transition: all 0.3s ease;
+            }
+
+            .stat-card:hover {
+                transform: translateY(-3px);
+            }
+
+            .stat-number {
+                font-size: 2.5rem;
+                font-weight: 800;
+                background: var(--gradient-primary);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .stat-label {
+                font-size: 0.9rem;
+                color: #6b7280;
+                font-weight: 500;
+                margin-top: 8px;
+            }
+
+            /* Progress Bars */
+            .progress {
+                height: 8px;
+                border-radius: 10px;
+                background: rgba(99, 102, 241, 0.1);
+            }
+
+            .progress-bar {
+                background: var(--gradient-primary);
+                border-radius: 10px;
+            }
+
+            /* Goals */
+            .goal-card {
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 16px;
+                padding: 20px;
                 margin-bottom: 16px;
+                border-left: 4px solid var(--primary-color);
+                transition: all 0.3s ease;
             }
 
+            .goal-card:hover {
+                transform: translateX(5px);
+            }
+
+            .goal-progress {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: var(--primary-color);
+            }
+
+            /* Chat Interface */
             .chat-container {
-                height: 300px;
+                height: 400px;
+                overflow-y: auto;
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 16px;
+                padding: 20px;
             }
-        }
-    </style>
 
-    {% block extra_css %}{% endblock %}
+            .chat-message {
+                margin-bottom: 16px;
+                animation: fadeInUp 0.5s ease;
+            }
+
+            .chat-message.user {
+                text-align: right;
+            }
+
+            .chat-bubble {
+                display: inline-block;
+                padding: 12px 16px;
+                border-radius: 18px;
+                max-width: 80%;
+                word-wrap: break-word;
+            }
+
+            .chat-bubble.user {
+                background: var(--gradient-primary);
+                color: white;
+            }
+
+            .chat-bubble.ai {
+                background: rgba(99, 102, 241, 0.1);
+                color: var(--dark-color);
+                border: 1px solid rgba(99, 102, 241, 0.2);
+            }
+
+            /* Achievements */
+            .achievement-badge {
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 16px;
+                padding: 16px;
+                text-align: center;
+                border: 2px solid transparent;
+                transition: all 0.3s ease;
+            }
+
+            .achievement-badge.earned {
+                border-color: var(--success-color);
+                background: rgba(16, 185, 129, 0.1);
+            }
+
+            .achievement-badge.available {
+                border-color: rgba(99, 102, 241, 0.3);
+                opacity: 0.7;
+            }
+
+            .achievement-icon {
+                font-size: 2rem;
+                margin-bottom: 8px;
+            }
+
+            /* Animations */
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes bounce {
+
+                0%,
+                20%,
+                53%,
+                80%,
+                100% {
+                    transform: translate3d(0, 0, 0);
+                }
+
+                40%,
+                43% {
+                    transform: translate3d(0, -10px, 0);
+                }
+
+                70% {
+                    transform: translate3d(0, -5px, 0);
+                }
+
+                90% {
+                    transform: translate3d(0, -2px, 0);
+                }
+            }
+
+            .bounce-animation {
+                animation: bounce 1s ease;
+            }
+
+            /* Floating Action Button */
+            .fab {
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background: var(--gradient-primary);
+                color: white;
+                border: none;
+                font-size: 1.5rem;
+                box-shadow: var(--shadow-lg);
+                transition: all 0.3s ease;
+                z-index: 1000;
+            }
+
+            .fab:hover {
+                transform: scale(1.1);
+                box-shadow: var(--shadow-xl);
+            }
+
+            /* Demo Mode Indicator */
+            .demo-indicator {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--gradient-warning);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 20px;
+                font-weight: 600;
+                z-index: 1000;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+                }
+
+                70% {
+                    box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+                }
+
+                100% {
+                    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+                }
+            }
+
+            /* Mobile Responsive */
+            @media (max-width: 768px) {
+                .stat-number {
+                    font-size: 2rem;
+                }
+
+                .teen-card {
+                    margin-bottom: 16px;
+                }
+
+                .chat-container {
+                    height: 300px;
+                }
+            }
+        </style>
+
+        {% block extra_css %}{% endblock %}
 </head>
 
 <body>

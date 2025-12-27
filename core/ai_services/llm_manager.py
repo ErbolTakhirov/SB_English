@@ -125,14 +125,15 @@ class LLMManager:
                   max_tokens: int = 1000,
                   **kwargs) -> LLMResponse:
         """Synchronous chat with current LLM provider"""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            return loop.run_until_complete(
-                self.chat(messages, temperature, max_tokens, **kwargs)
+        provider_method = self.providers.get(self.current_provider)
+        if not provider_method:
+            return LLMResponse(
+                content="Provider not available",
+                provider=str(self.current_provider),
+                model=self._get_model()
             )
-        finally:
-            loop.close()
+        
+        return provider_method(messages, temperature, max_tokens, **kwargs)
     
     def _openai_chat(self, 
                      messages: List[Dict[str, str]], 

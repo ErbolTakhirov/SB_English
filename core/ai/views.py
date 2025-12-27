@@ -20,6 +20,7 @@ from core.utils.analytics import parse_actionable_items
 from core.llm import _compute_content_hash
 
 
+@csrf_exempt
 @login_required
 def ai_chat_api_v2(request):
     """

@@ -110,5 +110,17 @@ urlpatterns = [
     # AI рекомендации
     path('ai/', views.ai_recommendations, name='ai_recommendations'),
     path('documents/generate/', views.document_generate_view, name='document_generate'),
+    
+    # ==============================================================================
+    # NEW: AI ACCOUNTANT API ENDPOINTS
+    # ==============================================================================
+    path('api/import/text/', views.import_text_api, name='import_text_api'),
+    path('api/review/queue/', views.review_queue_api, name='review_queue_api'),
+    path('api/category/update/', views.update_category_api, name='update_category_api'),
+    path('api/forecast/', views.forecast_api, name='forecast_api'),
+    path('api/goals/<int:goal_id>/prediction/', views.goal_prediction_api, name='goal_prediction_api'),
+    path('api/advice/monthly/', views.monthly_advice_api, name='monthly_advice_api'),
+    path('api/spending/analysis/', views.spending_analysis_api, name='spending_analysis_api'),
+    path('api/goals/auto-update/', views.auto_update_goals_api, name='auto_update_goals_api'),
 ]
 

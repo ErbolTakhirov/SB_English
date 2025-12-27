@@ -786,6 +786,7 @@ def _serialize_transactions_csv(incomes_qs, expenses_qs) -> str:
     return "\n".join(lines)
 
 
+@csrf_exempt
 @login_required
 def upload_api(request):
     """AJAX upload endpoint: parse file, optionally import to DB, return summary + AI advice."""
@@ -999,6 +1000,7 @@ def upload_api(request):
         return JsonResponse(response_data, status=500)
 
 
+@csrf_exempt
 @login_required
 def ai_chat_api(request):
     """
@@ -3206,5 +3208,346 @@ def ai_insights_view(request):
     Dashboard for deep AI financial insights
     """
     return render(request, 'automation/insights.html', {'user': request.user})
+
+
+# ==============================================================================
+# NEW: AI ACCOUNTANT API ENDPOINTS
+# ==============================================================================
+
+@csrf_exempt
+@login_required
+def import_text_api(request):
+    """
+    Import transactions from plain text
+    POST: {text: str, auto_categorize: bool}
+    """
+    if request.method == 'POST':
+        try:
+            from core.services.import_service import ImportService
+            
+            data = json.loads(request.body)
+            text = data.get('text', '').strip()
+            auto_categorize = data.get('auto_categorize', True)
+            
+            if not text:
+                return JsonResponse({'error': 'Текст не может быть пустым'}, status=400)
+            
+            import_service = ImportService(request.user)
+            result = import_service.import_from_text(text, auto_categorize)
+            
+            return JsonResponse(result)
+            
+        except Exception as e:
+            logger.error(f"Text import error: {e}")
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Метод не поддерживается'}, status=405)
+
+
+@login_required
+def review_queue_api(request):
+    """
+    Get transactions that need review
+    """
+    try:
+        from core.services.import_service import ImportService
+        
+        import_service = ImportService(request.user)
+        queue = import_service.get_review_queue()
+        
+        # Serialize and Combine
+        transactions = []
+        
+        for inc in queue['incomes']:
+            transactions.append({
+                'id': inc.id,
+                'type': 'income',
+                'date': inc.date.isoformat(),
+                'amount': float(inc.amount),
+                'category': inc.income_type,
+                'category_display': inc.get_income_type_display() if hasattr(inc, 'get_income_type_display') else inc.income_type,
+                'description': inc.description or '',
+                'merchant': inc.merchant or 'Неизвестно',
+                'needs_review': inc.needs_review,
+                'confidence': inc.ai_category_confidence or 0.5
+            })
+            
+        for exp in queue['expenses']:
+            transactions.append({
+                'id': exp.id,
+                'type': 'expense',
+                'date': exp.date.isoformat(),
+                'amount': float(exp.amount),
+                'category': exp.expense_type,
+                'category_display': exp.get_expense_type_display() if hasattr(exp, 'get_expense_type_display') else exp.expense_type,
+                'description': exp.description or '',
+                'merchant': exp.merchant or 'Неизвестно',
+                'needs_review': exp.needs_review,
+                'confidence': exp.ai_category_confidence or 0.5
+            })
+            
+        # Sort by date descending
+        transactions.sort(key=lambda x: x['date'], reverse=True)
+        
+        return JsonResponse({
+            'transactions': transactions,
+            'total': queue['total']
+        })
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Review queue error: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required
+def update_category_api(request):
+    """
+    Update transaction category, confirm, or delete transaction.
+    POST: {
+        transaction_id: int, 
+        transaction_type: str, 
+        category: str (optional),
+        confirm: bool (optional),
+        delete: bool (optional)
+    }
+    """
+    if request.method == 'POST':
+        try:
+            import json
+            from core.models import Income, Expense
+            
+            data = json.loads(request.body)
+            transaction_id = data.get('transaction_id')
+            transaction_type = data.get('transaction_type')
+            category = data.get('category')
+            confirm = data.get('confirm', False)
+            delete_action = data.get('delete', False)
+            
+            if not transaction_id or not transaction_type:
+                return JsonResponse({'error': 'Недостаточно данных'}, status=400)
+            
+            # Select model
+            model = Income if transaction_type == 'income' else Expense
+            
+            try:
+                tx = model.objects.get(id=transaction_id, user=request.user)
+            except model.DoesNotExist:
+                return JsonResponse({'error': 'Транзакция не найдена'}, status=404)
+
+            # Handle Delete
+            if delete_action:
+                tx.delete()
+                return JsonResponse({'success': True, 'message': 'Транзакция удалена'})
+
+            # Handle Category Update
+            if category:
+                tx.category = category
+                # Auto-confirm if category is manually set? Optional. 
+                # For now let's just set the category.
+                if confirm:
+                     tx.needs_review = False
+                tx.save()
+                return JsonResponse({'success': True, 'message': 'Категория обновлена'})
+
+            # Handle Confirm only
+            if confirm:
+                tx.needs_review = False
+                tx.save()
+                return JsonResponse({'success': True, 'message': 'Транзакция подтверждена'})
+            
+            return JsonResponse({'error': 'Нет действий для выполнения'}, status=400)
+            
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Update category error: {e}")
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Метод не поддерживается'}, status=405)
+
+
+@login_required
+def forecast_api(request):
+    """
+    Get financial forecast
+    """
+    try:
+        from core.services.forecasting import ForecastingService
+        
+        forecasting = ForecastingService(request.user)
+        
+        # Get historical summary
+        historical = forecasting.get_historical_summary(months=6)
+        
+        # Get next month forecast
+        next_month = forecasting.forecast_next_month()
+        
+        # Get category forecasts
+        expense_forecast = forecasting.forecast_by_category('expense', months=3)
+        income_forecast = forecasting.forecast_by_category('income', months=3)
+        
+        # Get money leaks
+        money_leaks = forecasting.identify_money_leaks(top_n=5)
+        
+        return JsonResponse({
+            'historical': {
+                'months_analyzed': historical['months_analyzed'],
+                'avg_monthly_income': float(historical['avg_monthly_income']),
+                'avg_monthly_expense': float(historical['avg_monthly_expense']),
+                'avg_monthly_net': float(historical['avg_monthly_net']),
+                'income_stability': historical['income_stability'],
+                'expense_stability': historical['expense_stability'],
+            },
+            'next_month': {
+                'predicted_income': float(next_month['predicted_income']),
+                'predicted_expense': float(next_month['predicted_expense']),
+                'predicted_net': float(next_month['predicted_net']),
+                'confidence': next_month['confidence'],
+                'method': next_month['method']
+            },
+            'category_forecast': {
+                'expenses': {k: float(v) for k, v in expense_forecast.items()},
+                'incomes': {k: float(v) for k, v in income_forecast.items()}
+            },
+            'money_leaks': money_leaks
+        })
+        
+    except Exception as e:
+        logger.error(f"Forecast API error: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def goal_prediction_api(request, goal_id):
+    """
+    Get goal achievement prediction
+    """
+    try:
+        from core.services.forecasting import ForecastingService
+        
+        goal = get_object_or_404(UserGoal, id=goal_id, user=request.user)
+        forecasting = ForecastingService(request.user)
+        
+        prediction = forecasting.predict_goal_achievement(goal)
+        
+        return JsonResponse({
+            'goal_id': goal.id,
+            'goal_title': goal.title,
+            'probability': prediction['probability'],
+            'on_track': prediction['on_track'],
+            'required_monthly_saving': float(prediction['required_monthly_saving']),
+            'current_monthly_saving': float(prediction['current_monthly_saving']),
+            'recommendation': prediction['recommendation']
+        })
+        
+    except Exception as e:
+        logger.error(f"Goal prediction error: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def monthly_advice_api(request):
+    """
+    Get AI-generated monthly financial advice
+    """
+    try:
+        from core.services.ai_advisor import AIAdvisorService
+        
+        advisor = AIAdvisorService(request.user)
+        advice_data = advisor.generate_monthly_advice()
+        
+        return JsonResponse({
+            'summary': advice_data['summary'],
+            'advice': advice_data['advice'],
+            'action_items': advice_data['action_items'],
+            'highlights': {
+                'monthly_net': float(advice_data['highlights']['monthly_net']),
+                'top_leak': advice_data['highlights']['top_leak'],
+                'goals_count': advice_data['highlights']['goals_count']
+            },
+            'confidence': advice_data['confidence']
+        })
+        
+    except Exception as e:
+        logger.error(f"Monthly advice error: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def spending_analysis_api(request):
+    """
+    Get detailed spending pattern analysis
+    """
+    try:
+        from core.services.ai_advisor import AIAdvisorService
+        
+        advisor = AIAdvisorService(request.user)
+        patterns = advisor.analyze_spending_patterns()
+        
+        return JsonResponse({
+            'total_expense': float(patterns['total_expense']),
+            'essential_expense': float(patterns['essential_expense']),
+            'non_essential_expense': float(patterns['non_essential_expense']),
+            'essential_percentage': patterns['essential_percentage'],
+            'top_categories': {k: float(v) for k, v in patterns['top_categories'].items()}
+        })
+        
+    except Exception as e:
+        logger.error(f"Spending analysis error: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def auto_update_goals_api(request):
+    """
+    Automatically update goal progress based on transactions
+    """
+    try:
+        from decimal import Decimal
+        from datetime import timedelta
+        
+        goals = UserGoal.objects.filter(user=request.user, status='active')
+        updated_count = 0
+        
+        for goal in goals:
+            # Find transactions linked to this goal's category
+            # For now, we'll calculate based on net savings
+            
+            # Get transactions since goal creation
+            incomes = Income.objects.filter(
+                user=request.user,
+                date__gte=goal.created_at.date()
+            ).aggregate(total=Sum('amount'))['total'] or Decimal(0)
+            
+            expenses = Expense.objects.filter(
+                user=request.user,
+                date__gte=goal.created_at.date()
+            ).aggregate(total=Sum('amount'))['total'] or Decimal(0)
+            
+            # Calculate net savings
+            net_savings = incomes - expenses
+            
+            # Update goal if positive savings
+            if net_savings > 0:
+                # Allocate a portion to this goal (e.g., 30% of net savings)
+                allocation_rate = Decimal('0.3')
+                allocated_amount = net_savings * allocation_rate
+                
+                goal.current_amount = min(allocated_amount, goal.target_amount)
+                goal.save()
+                updated_count += 1
+        
+        return JsonResponse({
+            'success': True,
+            'updated_count': updated_count,
+            'message': f'Обновлено {updated_count} целей'
+        })
+        
+    except Exception as e:
+        logger.error(f"Auto update goals error: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
 
 

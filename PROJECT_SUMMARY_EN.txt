@@ -1,0 +1,38 @@
+# 📄 SB Finance AI Project Documentation
+
+**The Problem:**
+Small businesses often manage finances chaotically (Excel, notes), losing control over money. Existing solutions are either too complex (1C) or require manual entry. Entrepreneurs do not receive quality financial advice due to the high cost of a CFO.
+
+**The Solution: SB Finance AI**
+An intelligent web service that replaces a financial director. It combines automatic accounting (bank import) with a powerful AI analyst that doesn't just show charts, but gives specific advice, finds anomalies, and predicts cash gaps.
+
+**How it works:**
+1. **Data Collection:** User uploads statements (CSV/Excel) or enters data. The system automatically cleans duplicates and categorizes transactions (ML).
+2. **Analysis (Math + AI):** Statistical algorithms (Hard Math) calculate trends, anomalies, and Health Score.
+3. **Insight Generation (LLM):** AI (DeepSeek/GPT) receives prepared context and forms human-like recommendations.
+4. **Interactive:** User chats with AI in real-time, receiving answers with explainable logic (Chain of Thought).
+
+**How to Test (Demo):**
+1. Open the page `/demo/` (e.g., `http://127.0.0.1:8000/demo/`).
+2. Enter a financial question (e.g., "How to cut expenses?").
+3. Watch the **Real-time Streaming**: AI will visualize the "thinking" process.
+4. Click **"Health Score"** to see the business health score (0-100).
+5. Click **"Confidence"** to see how confident the AI is in the answer.
+
+**Use Cases:**
+*   **Expense Optimization:** "Find where we are spending too much compared to last month."
+*   **Planning:** "Can we hire a new employee with a 50k salary next month?"
+*   **Leak Detection:** "Were there any strange transactions on the weekend?"
+*   **Strategy:** "How can I save 1 million for office expansion?"
+
+**Technical Details and API:**
+*   **Stack:** Django 5, Python 3.9, Vanilla JS, PostgreSQL/SQLite.
+*   **AI Engine:** Hybrid (OpenRouter + Ollama Local). Supports Llama 3, DeepSeek, GPT-4.
+*   **Security:** AES-256 encryption, PII anonymization (removing names/contacts).
+*   **Key APIs:**
+    *   `POST /api/ai/chat/stream/` — smart response streaming.
+    *   `GET /api/ai/health-score/` — business scoring.
+    *   `POST /api/upload/` — intelligent file import.
+
+**Link to Full Documentation (README):**
+The root `README.md` file contains detailed installation and deployment instructions.
