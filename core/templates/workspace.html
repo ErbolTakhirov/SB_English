@@ -1224,7 +1224,7 @@
 
         if (data.ok) {
           setTimeout(() => {
-            addMessage('assistant', 'File uploaded. Generating financial analysis...', true);
+            addMessage('assistant', 'File uploaded. Generating financial analysis...');
             // Trigger AI analysis automatically
             const analysisPrompt = "I have uploaded a file. Please analyze the data and provide: 1. General financial state description. 2. Identified problems or anomalies. 3. Recommendations for improvement.";
             sendMessage(analysisPrompt, true); // Hidden from user view, but AI receives it
