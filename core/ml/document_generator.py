@@ -1,26 +1,31 @@
 from typing import Dict
 
-try:
-    from transformers import AutoTokenizer, AutoModelForCausalLM
-    import torch
-    _HF_AVAILABLE = True
-except Exception:
-    _HF_AVAILABLE = False
-
-
-_MODEL_ID = 'sshleifer/tiny-gpt2'  # маленькая демо-модель для быстрого старта
+# transformers import removed from global scope to save memory
+_HF_AVAILABLE = True # Assume available, check later
+_MODEL_ID = 'sshleifer/tiny-gpt2'
 _tokenizer = None
 _model = None
 
 
 def _lazy_load():
-    global _tokenizer, _model
-    if not _HF_AVAILABLE:
+    global _tokenizer, _model, _HF_AVAILABLE
+    
+    if _tokenizer is not None and _model is not None:
+        return True
+        
+    try:
+        # Import ONLY when actually needed
+        from transformers import AutoTokenizer, AutoModelForCausalLM
+        import torch
+        
+        if _tokenizer is None:
+            _tokenizer = AutoTokenizer.from_pretrained(_MODEL_ID)
+        if _model is None:
+            _model = AutoModelForCausalLM.from_pretrained(_MODEL_ID)
+        return True
+    except Exception:
+        _HF_AVAILABLE = False
         return False
-    if _tokenizer is None or _model is None:
-        _tokenizer = AutoTokenizer.from_pretrained(_MODEL_ID)
-        _model = AutoModelForCausalLM.from_pretrained(_MODEL_ID)
-    return True
 
 
 def _fallback_template(doc_type: str, params: Dict[str, str]) -> str:

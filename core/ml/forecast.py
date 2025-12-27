@@ -1,8 +1,6 @@
 from datetime import date
 from typing import Optional, Dict
 
-from sklearn.linear_model import LinearRegression
-import numpy as np
 from core.utils.ai_utils import ai_predict_next_month
 
 
@@ -37,6 +35,10 @@ def forecast_next_month_profit(incomes_qs, expenses_qs, user=None) -> Dict:
     
     if len(profits) < 2:
         return {'next_month_profit': profits[0] if profits else 0.0, 'method': 'Static', 'reasoning': 'Мало данных для анализа тренда.'}
+
+    # Lazy import to save memory
+    from sklearn.linear_model import LinearRegression
+    import numpy as np
 
     X = np.array(range(len(months))).reshape(-1, 1)
     y = np.array(profits)
