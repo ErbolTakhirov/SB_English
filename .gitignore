@@ -197,3 +197,30 @@ dist/
 local_settings.py
 .env.local
 
+# ============================================================================
+# SECURITY: API Keys and Secrets Protection
+# ============================================================================
+# Environment files with API keys
+.env
+.env.*
+!.env.example
+env.example
+
+# Backup files that might contain secrets
+*.env.backup
+*.env.bak
+.env.old
+
+# Any file with 'secret' or 'key' in name
+*secret*
+*SECRET*
+*apikey*
+*APIKEY*
+
+# Common secret file patterns
+secrets.json
+secrets.yaml
+secrets.yml
+credentials.json
+api_keys.txt
+

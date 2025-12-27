@@ -1,20 +1,22 @@
 {% extends 'base.html' %}
-{% block title %}Дашборд{% endblock %}
+{% block title %}Dashboard{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
   <div>
-    <h2 class="mb-0">📊 Финансовый Дашборд</h2>
-    <div class="muted">Интерактивная аналитика и AI-инсайты</div>
+    <h2 class="mb-0">📊 Financial Dashboard</h2>
+    <div class="muted">Interactive Analytics & AI Insights</div>
   </div>
   <form method="get" class="d-flex align-items-center gap-2" id="filterForm">
-    <label class="d-inline-flex align-items-center gap-2">С:
-      <input class="form-control form-control-sm" type="date" name="start" id="dateStart" value="{{ start|default:'' }}">
+    <label class="d-inline-flex align-items-center gap-2">From:
+      <input class="form-control form-control-sm" type="date" name="start" id="dateStart"
+        value="{{ start|default:'' }}">
     </label>
-    <label class="d-inline-flex align-items-center gap-2">По:
+    <label class="d-inline-flex align-items-center gap-2">To:
       <input class="form-control form-control-sm" type="date" name="end" id="dateEnd" value="{{ end|default:'' }}">
     </label>
-    <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-funnel"></i> Применить</button>
-    <a class="btn btn-outline-secondary btn-sm" href="/dashboard/"><i class="bi bi-arrow-counterclockwise"></i> Сброс</a>
+    <button class="btn btn-primary btn-sm" type="submit"><i class="bi bi-funnel"></i> Apply</button>
+    <a class="btn btn-outline-secondary btn-sm" href="/dashboard/"><i class="bi bi-arrow-counterclockwise"></i>
+      Reset</a>
   </form>
 </div>
 
@@ -22,21 +24,21 @@
 <div class="row mb-4">
   <div class="col-md-4 mb-3">
     <div class="app-card p-4 h-100">
-      <div class="muted small mb-1">💰 Доходы</div>
+      <div class="muted small mb-1">💰 Income</div>
       <div class="h3 mb-0 text-success" id="kpi-income">{{ income_total|default:0 }}</div>
       <div class="small text-muted mt-2" id="kpi-income-change"></div>
     </div>
   </div>
   <div class="col-md-4 mb-3">
     <div class="app-card p-4 h-100">
-      <div class="muted small mb-1">💸 Расходы</div>
+      <div class="muted small mb-1">💸 Expenses</div>
       <div class="h3 mb-0 text-danger" id="kpi-expense">{{ expense_total|default:0 }}</div>
       <div class="small text-muted mt-2" id="kpi-expense-change"></div>
     </div>
   </div>
   <div class="col-md-4 mb-3">
     <div class="app-card p-4 h-100 card-gradient">
-      <div class="muted small mb-1">📈 Прибыль</div>
+      <div class="muted small mb-1">📈 Profit</div>
       <div class="h3 mb-0" id="kpi-profit">{{ profit|default:0 }}</div>
       <div class="small text-muted mt-2" id="kpi-profit-change"></div>
       <div id="ai-kpi" class="mt-2"></div>
@@ -48,17 +50,17 @@
 <div class="app-card p-3 mb-3">
   <div class="row align-items-center">
     <div class="col-md-3">
-      <label class="form-label small">Группировка:</label>
+      <label class="form-label small">Grouping:</label>
       <select class="form-select form-select-sm" id="groupBy">
-        <option value="day">По дням</option>
-        <option value="week">По неделям</option>
-        <option value="month">По месяцам</option>
+        <option value="day">By Day</option>
+        <option value="week">By Week</option>
+        <option value="month">By Month</option>
       </select>
     </div>
     <div class="col-md-3">
-      <label class="form-label small">Категория:</label>
+      <label class="form-label small">Category:</label>
       <select class="form-select form-select-sm" id="categoryFilter">
-        <option value="">Все категории</option>
+        <option value="">All Categories</option>
       </select>
     </div>
     <div class="col-md-6 text-end">
@@ -78,10 +80,10 @@
 <!-- Time Series Chart -->
 <div class="app-card p-4 mb-3">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0">📈 Динамика доходов и расходов</h5>
+    <h5 class="mb-0">📈 Income & Expense Dynamics</h5>
     <div class="form-check form-switch">
       <input class="form-check-input" type="checkbox" id="showProfitFill" checked>
-      <label class="form-check-label small" for="showProfitFill">Показать профит (fill)</label>
+      <label class="form-check-label small" for="showProfitFill">Show Profit (fill)</label>
     </div>
   </div>
   <div id="timeSeriesChart" style="height: 400px;"></div>
@@ -89,7 +91,7 @@
 
 <!-- Cumulative Chart -->
 <div class="app-card p-4 mb-3">
-  <h5 class="mb-3">📊 Кумулятивный рост</h5>
+  <h5 class="mb-3">📊 Cumulative Growth</h5>
   <div id="cumulativeChart" style="height: 300px;"></div>
 </div>
 
@@ -97,13 +99,13 @@
 <div class="row mb-3">
   <div class="col-md-6 mb-3">
     <div class="app-card p-4 h-100">
-      <h5 class="mb-3">🥧 Расходы по категориям</h5>
+      <h5 class="mb-3">🥧 Expenses by Category</h5>
       <div id="expensePieChart" style="height: 350px;"></div>
     </div>
   </div>
   <div class="col-md-6 mb-3">
     <div class="app-card p-4 h-100">
-      <h5 class="mb-3">📊 Доходы по категориям</h5>
+      <h5 class="mb-3">📊 Income by Category</h5>
       <div id="incomePieChart" style="height: 350px;"></div>
     </div>
   </div>
@@ -111,7 +113,7 @@
 
 <!-- Bar Chart by Category -->
 <div class="app-card p-4 mb-3">
-  <h5 class="mb-3">📊 Расходы по категориям (Bar)</h5>
+  <h5 class="mb-3">📊 Expenses by Category (Bar)</h5>
   <div id="expenseBarChart" style="height: 350px;"></div>
 </div>
 
@@ -119,13 +121,13 @@
 <div class="row mb-3">
   <div class="col-md-6 mb-3">
     <div class="app-card p-3 h-100">
-      <div class="app-section-title mb-2">🚩 AI Оповещения</div>
+      <div class="app-section-title mb-2">🚩 AI Alerts</div>
       <ul id="ai-alerts" class="mb-0 small"></ul>
     </div>
   </div>
   <div class="col-md-6 mb-3">
     <div class="app-card p-3 h-100">
-      <div class="app-section-title mb-2">💡 AI Рекомендации</div>
+      <div class="app-section-title mb-2">💡 AI Recommendations</div>
       <ul id="ai-recs" class="mb-0 small"></ul>
     </div>
   </div>
@@ -134,28 +136,32 @@
 <!-- Upload File -->
 <div class="app-card p-3 mb-3">
   <div class="d-flex flex-wrap justify-content-between align-items-center">
-    <div class="app-section-title">Загрузка файла</div>
+    <div class="app-section-title">File Upload</div>
     <div class="muted small">CSV · DOCX · PDF</div>
   </div>
   <form method="post" enctype="multipart/form-data" class="actions mt-2" id="uploadForm">{% csrf_token %}
-    <input class="form-control" style="max-width: 360px;" type="file" name="upload_file" accept=".csv,.pdf,.docx" required>
+    <input class="form-control" style="max-width: 360px;" type="file" name="upload_file" accept=".csv,.pdf,.docx"
+      required>
     <div class="form-check">
       <input class="form-check-input" type="checkbox" name="import_to_db" id="import_to_db" checked>
-      <label class="form-check-label" for="import_to_db">Импортировать данные из CSV в базу</label>
+      <label class="form-check-label" for="import_to_db">Import CSV data to database</label>
     </div>
-    <button class="btn btn-success" type="submit"><i class="bi bi-upload"></i> Загрузить и проанализировать</button>
+    <button class="btn btn-success" type="submit"><i class="bi bi-upload"></i> Upload & Analyze</button>
   </form>
 </div>
 
 <!-- Records Feed -->
 <div class="app-card p-3">
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
-    <div class="app-section-title mb-0">📋 Лента записей</div>
+    <div class="app-section-title mb-0">📋 Records Feed</div>
     <div class="actions">
-      <label class="form-check d-inline-flex align-items-center gap-2"><input class="form-check-input flt-type" type="checkbox" value="income" checked> Доходы</label>
-      <label class="form-check d-inline-flex align-items-center gap-2"><input class="form-check-input flt-type" type="checkbox" value="expense" checked> Расходы</label>
-      <input class="form-control" style="max-width: 220px;" type="text" id="search" placeholder="Поиск">
-      <button class="btn btn-outline-primary" id="reload" type="button"><i class="bi bi-arrow-clockwise"></i> Обновить</button>
+      <label class="form-check d-inline-flex align-items-center gap-2"><input class="form-check-input flt-type"
+          type="checkbox" value="income" checked> Income</label>
+      <label class="form-check d-inline-flex align-items-center gap-2"><input class="form-check-input flt-type"
+          type="checkbox" value="expense" checked> Expenses</label>
+      <input class="form-control" style="max-width: 220px;" type="text" id="search" placeholder="Search">
+      <button class="btn btn-outline-primary" id="reload" type="button"><i class="bi bi-arrow-clockwise"></i>
+        Refresh</button>
     </div>
   </div>
   <ul id="feed" class="mb-0"></ul>
@@ -164,682 +170,682 @@
 <!-- Plotly.js -->
 <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
 <script>
-let chartData = null;
-let showMovingAvg = false;
-let charts = {};
+  let chartData = null;
+  let showMovingAvg = false;
+  let charts = {};
 
-async function loadDashboardData() {
-  const params = new URLSearchParams();
-  const start = document.getElementById('dateStart')?.value;
-  const end = document.getElementById('dateEnd')?.value;
-  const groupBy = document.getElementById('groupBy')?.value || 'day';
-  const category = document.getElementById('categoryFilter')?.value || '';
-  
-  if (start) params.append('start', start);
-  if (end) params.append('end', end);
-  params.append('group_by', groupBy);
-  if (category) params.append('category', category);
-  
-  try {
-    const res = await fetch(`/api/dashboard/data/?${params.toString()}`);
-    const data = await res.json();
-    if (data.ok) {
-      chartData = data;
-      renderAllCharts();
-      updateCategories(data.categories);
-      updateKPI(data);
-    }
-  } catch (error) {
-    console.error('Error loading dashboard data:', error);
-  }
-}
+  async function loadDashboardData() {
+    const params = new URLSearchParams();
+    const start = document.getElementById('dateStart')?.value;
+    const end = document.getElementById('dateEnd')?.value;
+    const groupBy = document.getElementById('groupBy')?.value || 'day';
+    const category = document.getElementById('categoryFilter')?.value || '';
 
-function updateKPI(data) {
-  if (!data || !data.daily) return;
-  
-  const daily = data.daily;
-  if (daily.income.length === 0) return;
-  
-  // Обновляем значения
-  const totalIncome = daily.income.reduce((a, b) => a + b, 0);
-  const totalExpense = daily.expense.reduce((a, b) => a + b, 0);
-  const totalProfit = totalIncome - totalExpense;
-  
-  document.getElementById('kpi-income').textContent = totalIncome.toFixed(2);
-  document.getElementById('kpi-expense').textContent = totalExpense.toFixed(2);
-  document.getElementById('kpi-profit').textContent = totalProfit.toFixed(2);
-  
-  // Вычисляем динамику (сравнение последней недели с предыдущей)
-  if (daily.income.length >= 14) {
-    const lastWeekIncome = daily.income.slice(-7).reduce((a, b) => a + b, 0);
-    const prevWeekIncome = daily.income.slice(-14, -7).reduce((a, b) => a + b, 0);
-    const lastWeekExpense = daily.expense.slice(-7).reduce((a, b) => a + b, 0);
-    const prevWeekExpense = daily.expense.slice(-14, -7).reduce((a, b) => a + b, 0);
-    
-    const incomeChange = prevWeekIncome > 0 ? ((lastWeekIncome - prevWeekIncome) / prevWeekIncome * 100) : 0;
-    const expenseChange = prevWeekExpense > 0 ? ((lastWeekExpense - prevWeekExpense) / prevWeekExpense * 100) : 0;
-    
-    const incomeChangeEl = document.getElementById('kpi-income-change');
-    const expenseChangeEl = document.getElementById('kpi-expense-change');
-    
-    if (incomeChangeEl) {
-      const sign = incomeChange >= 0 ? '+' : '';
-      incomeChangeEl.textContent = `За неделю: ${sign}${incomeChange.toFixed(1)}%`;
-      incomeChangeEl.className = incomeChange >= 0 ? 'small text-success mt-2' : 'small text-danger mt-2';
-    }
-    
-    if (expenseChangeEl) {
-      const sign = expenseChange >= 0 ? '+' : '';
-      expenseChangeEl.textContent = `За неделю: ${sign}${expenseChange.toFixed(1)}%`;
-      expenseChangeEl.className = expenseChange >= 0 ? 'small text-danger mt-2' : 'small text-success mt-2';
-    }
-  }
-}
+    if (start) params.append('start', start);
+    if (end) params.append('end', end);
+    params.append('group_by', groupBy);
+    if (category) params.append('category', category);
 
-function renderTimeSeriesChart() {
-  if (!chartData || !chartData.daily) return;
-  
-  const daily = chartData.daily;
-  const dates = daily.dates.map(d => new Date(d));
-  
-  // Обработка разрывов данных (пропущенные дни)
-  // Для Plotly: если между датами больше 1 дня - добавляем null для разрыва линии
-  const processDataWithGaps = (values, dates, tooltips = null) => {
-    const processedX = [];
-    const processedY = [];
-    const processedTooltips = [];
-    
-    for (let i = 0; i < dates.length; i++) {
-      processedX.push(dates[i]);
-      processedY.push(values[i]);
-      if (tooltips && tooltips[i]) {
-        processedTooltips.push(tooltips[i]);
-      } else {
-        processedTooltips.push(null);
+    try {
+      const res = await fetch(`/api/dashboard/data/?${params.toString()}`);
+      const data = await res.json();
+      if (data.ok) {
+        chartData = data;
+        renderAllCharts();
+        updateCategories(data.categories);
+        updateKPI(data);
       }
-      
-      // Если есть пропуск больше 1.5 дня, добавляем null для разрыва линии
-      if (i > 0) {
-        const daysDiff = (dates[i] - dates[i-1]) / (1000 * 60 * 60 * 24);
-        if (daysDiff > 1.5) {
-          // Вставляем null после предыдущей точки для разрыва
-          const insertIdx = processedX.length - 1;
-          processedX.splice(insertIdx, 0, dates[i-1]);
-          processedY.splice(insertIdx, 0, null);
-          processedTooltips.splice(insertIdx, 0, null);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    }
+  }
+
+  function updateKPI(data) {
+    if (!data || !data.daily) return;
+
+    const daily = data.daily;
+    if (daily.income.length === 0) return;
+
+    // Обновляем значения
+    const totalIncome = daily.income.reduce((a, b) => a + b, 0);
+    const totalExpense = daily.expense.reduce((a, b) => a + b, 0);
+    const totalProfit = totalIncome - totalExpense;
+
+    document.getElementById('kpi-income').textContent = totalIncome.toFixed(2);
+    document.getElementById('kpi-expense').textContent = totalExpense.toFixed(2);
+    document.getElementById('kpi-profit').textContent = totalProfit.toFixed(2);
+
+    // Вычисляем динамику (сравнение последней недели с предыдущей)
+    if (daily.income.length >= 14) {
+      const lastWeekIncome = daily.income.slice(-7).reduce((a, b) => a + b, 0);
+      const prevWeekIncome = daily.income.slice(-14, -7).reduce((a, b) => a + b, 0);
+      const lastWeekExpense = daily.expense.slice(-7).reduce((a, b) => a + b, 0);
+      const prevWeekExpense = daily.expense.slice(-14, -7).reduce((a, b) => a + b, 0);
+
+      const incomeChange = prevWeekIncome > 0 ? ((lastWeekIncome - prevWeekIncome) / prevWeekIncome * 100) : 0;
+      const expenseChange = prevWeekExpense > 0 ? ((lastWeekExpense - prevWeekExpense) / prevWeekExpense * 100) : 0;
+
+      const incomeChangeEl = document.getElementById('kpi-income-change');
+      const expenseChangeEl = document.getElementById('kpi-expense-change');
+
+      if (incomeChangeEl) {
+        const sign = incomeChange >= 0 ? '+' : '';
+        incomeChangeEl.textContent = `Week: ${sign}${incomeChange.toFixed(1)}%`;
+        incomeChangeEl.className = incomeChange >= 0 ? 'small text-success mt-2' : 'small text-danger mt-2';
+      }
+
+      if (expenseChangeEl) {
+        const sign = expenseChange >= 0 ? '+' : '';
+        expenseChangeEl.textContent = `Week: ${sign}${expenseChange.toFixed(1)}%`;
+        expenseChangeEl.className = expenseChange >= 0 ? 'small text-danger mt-2' : 'small text-success mt-2';
+      }
+    }
+  }
+
+  function renderTimeSeriesChart() {
+    if (!chartData || !chartData.daily) return;
+
+    const daily = chartData.daily;
+    const dates = daily.dates.map(d => new Date(d));
+
+    // Обработка разрывов данных (пропущенные дни)
+    // Для Plotly: если между датами больше 1 дня - добавляем null для разрыва линии
+    const processDataWithGaps = (values, dates, tooltips = null) => {
+      const processedX = [];
+      const processedY = [];
+      const processedTooltips = [];
+
+      for (let i = 0; i < dates.length; i++) {
+        processedX.push(dates[i]);
+        processedY.push(values[i]);
+        if (tooltips && tooltips[i]) {
+          processedTooltips.push(tooltips[i]);
+        } else {
+          processedTooltips.push(null);
+        }
+
+        // Если есть пропуск больше 1.5 дня, добавляем null для разрыва линии
+        if (i > 0) {
+          const daysDiff = (dates[i] - dates[i - 1]) / (1000 * 60 * 60 * 24);
+          if (daysDiff > 1.5) {
+            // Вставляем null после предыдущей точки для разрыва
+            const insertIdx = processedX.length - 1;
+            processedX.splice(insertIdx, 0, dates[i - 1]);
+            processedY.splice(insertIdx, 0, null);
+            processedTooltips.splice(insertIdx, 0, null);
+          }
         }
       }
+      return { x: processedX, y: processedY, tooltips: processedTooltips };
+    };
+
+    const incomeData = processDataWithGaps(daily.income, dates, daily.tooltips_income);
+    const expenseData = processDataWithGaps(daily.expense, dates, daily.tooltips_expense);
+
+    const traces = [
+      {
+        x: incomeData.x,
+        y: incomeData.y,
+        name: 'Income',
+        type: 'scatter',
+        mode: 'lines+markers',
+        line: { color: '#198754', width: 2.5, shape: 'linear' },
+        marker: { size: 7, color: '#198754' },
+        hovertemplate: incomeData.tooltips && incomeData.tooltips.length > 0 ?
+          '%{customdata}<extra></extra>' :
+          '<b>%{fullData.name}</b><br>Дата: %{x|%Y-%m-%d}<br>Сумма: %{y:,.2f} руб.<extra></extra>',
+        customdata: incomeData.tooltips || [],
+        connectgaps: false, // НЕ соединяем пропуски
+      },
+      {
+        x: expenseData.x,
+        y: expenseData.y,
+        name: 'Expenses',
+        type: 'scatter',
+        mode: 'lines+markers',
+        line: { color: '#dc3545', width: 2.5, shape: 'linear' },
+        marker: { size: 7, color: '#dc3545' },
+        hovertemplate: expenseData.tooltips && expenseData.tooltips.length > 0 ?
+          '%{customdata}<extra></extra>' :
+          '<b>%{fullData.name}</b><br>Дата: %{x|%Y-%m-%d}<br>Сумма: %{y:,.2f} руб.<extra></extra>',
+        customdata: expenseData.tooltips || [],
+        connectgaps: false, // НЕ соединяем пропуски
+      }
+    ];
+
+    // Profit fill area - добавляем линию прибыли с заливкой
+    if (document.getElementById('showProfitFill')?.checked) {
+      const profitData = processDataWithGaps(daily.profit, dates);
+
+      // Линия прибыли с заливкой до нуля (зеленая выше нуля, красная ниже)
+      traces.push({
+        x: profitData.x,
+        y: profitData.y,
+        name: 'Profit',
+        type: 'scatter',
+        mode: 'lines',
+        fill: 'tozeroy',
+        fillcolor: 'rgba(13, 110, 253, 0.15)',
+        line: { color: '#0d6efd', width: 2, dash: 'dot' },
+        hovertemplate: '<b>📊 Profit</b><br>Date: %{x|%Y-%m-%d}<br>Profit: %{y:,.2f} RUB<extra></extra>',
+        connectgaps: false,
+      });
     }
-    return { x: processedX, y: processedY, tooltips: processedTooltips };
-  };
-  
-  const incomeData = processDataWithGaps(daily.income, dates, daily.tooltips_income);
-  const expenseData = processDataWithGaps(daily.expense, dates, daily.tooltips_expense);
-  
-  const traces = [
-    {
-      x: incomeData.x,
-      y: incomeData.y,
-      name: 'Доходы',
-      type: 'scatter',
-      mode: 'lines+markers',
-      line: { color: '#198754', width: 2.5, shape: 'linear' },
-      marker: { size: 7, color: '#198754' },
-      hovertemplate: incomeData.tooltips && incomeData.tooltips.length > 0 ? 
-        '%{customdata}<extra></extra>' : 
-        '<b>%{fullData.name}</b><br>Дата: %{x|%Y-%m-%d}<br>Сумма: %{y:,.2f} руб.<extra></extra>',
-      customdata: incomeData.tooltips || [],
-      connectgaps: false, // НЕ соединяем пропуски
-    },
-    {
-      x: expenseData.x,
-      y: expenseData.y,
-      name: 'Расходы',
-      type: 'scatter',
-      mode: 'lines+markers',
-      line: { color: '#dc3545', width: 2.5, shape: 'linear' },
-      marker: { size: 7, color: '#dc3545' },
-      hovertemplate: expenseData.tooltips && expenseData.tooltips.length > 0 ? 
-        '%{customdata}<extra></extra>' : 
-        '<b>%{fullData.name}</b><br>Дата: %{x|%Y-%m-%d}<br>Сумма: %{y:,.2f} руб.<extra></extra>',
-      customdata: expenseData.tooltips || [],
-      connectgaps: false, // НЕ соединяем пропуски
-    }
-  ];
-  
-  // Profit fill area - добавляем линию прибыли с заливкой
-  if (document.getElementById('showProfitFill')?.checked) {
-    const profitData = processDataWithGaps(daily.profit, dates);
-    
-    // Линия прибыли с заливкой до нуля (зеленая выше нуля, красная ниже)
-    traces.push({
-      x: profitData.x,
-      y: profitData.y,
-      name: 'Прибыль',
-      type: 'scatter',
-      mode: 'lines',
-      fill: 'tozeroy',
-      fillcolor: 'rgba(13, 110, 253, 0.15)',
-      line: { color: '#0d6efd', width: 2, dash: 'dot' },
-      hovertemplate: '<b>📊 Прибыль</b><br>Дата: %{x|%Y-%m-%d}<br>Прибыль: %{y:,.2f} руб.<extra></extra>',
-      connectgaps: false,
-    });
-  }
-  
-  // Moving average (7 дней)
-  if (showMovingAvg && daily.moving_avg_income) {
-    const moving_avg_window = 7;
-    const maIncomeValid = [];
-    const maExpenseValid = [];
-    const maDates = [];
-    
-    for (let i = moving_avg_window - 1; i < dates.length; i++) {
-      if (daily.moving_avg_income[i] !== null) {
-        maDates.push(dates[i]);
-        maIncomeValid.push(daily.moving_avg_income[i]);
-        maExpenseValid.push(daily.moving_avg_expense[i]);
+
+    // Moving average (7 дней)
+    if (showMovingAvg && daily.moving_avg_income) {
+      const moving_avg_window = 7;
+      const maIncomeValid = [];
+      const maExpenseValid = [];
+      const maDates = [];
+
+      for (let i = moving_avg_window - 1; i < dates.length; i++) {
+        if (daily.moving_avg_income[i] !== null) {
+          maDates.push(dates[i]);
+          maIncomeValid.push(daily.moving_avg_income[i]);
+          maExpenseValid.push(daily.moving_avg_expense[i]);
+        }
+      }
+
+      if (maDates.length > 0) {
+        traces.push({
+          x: maDates,
+          y: maIncomeValid,
+          name: 'MA Income (7d)',
+          type: 'scatter',
+          mode: 'lines',
+          line: { color: '#198754', width: 2, dash: 'dash', opacity: 0.7 },
+          hovertemplate: '<b>MA Income (7d)</b><br>Date: %{x|%Y-%m-%d}<br>Avg: %{y:.2f}<extra></extra>',
+        });
+
+        traces.push({
+          x: maDates,
+          y: maExpenseValid,
+          name: 'MA Expenses (7d)',
+          type: 'scatter',
+          mode: 'lines',
+          line: { color: '#dc3545', width: 2, dash: 'dash', opacity: 0.7 },
+          hovertemplate: '<b>MA Expenses (7d)</b><br>Date: %{x|%Y-%m-%d}<br>Avg: %{y:.2f}<extra></extra>',
+        });
       }
     }
-    
-    if (maDates.length > 0) {
-      traces.push({
-        x: maDates,
-        y: maIncomeValid,
-        name: 'MA Доходы (7д)',
-        type: 'scatter',
-        mode: 'lines',
-        line: { color: '#198754', width: 2, dash: 'dash', opacity: 0.7 },
-        hovertemplate: '<b>MA Доходы (7д)</b><br>Дата: %{x|%Y-%m-%d}<br>Среднее: %{y:.2f}<extra></extra>',
+
+    // Events/Anomalies markers - размещаем на соответствующих датах
+    if (chartData.events && chartData.events.length > 0) {
+      const eventDates = [];
+      const eventAmounts = [];
+      const eventTexts = [];
+      const eventSymbols = [];
+
+      chartData.events.forEach(event => {
+        const eventDate = new Date(event.date);
+        // Находим индекс ближайшей даты в графике
+        let closestIdx = 0;
+        let minDiff = Infinity;
+        dates.forEach((d, idx) => {
+          const diff = Math.abs(d - eventDate);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestIdx = idx;
+          }
+        });
+
+        // Используем сумму для позиционирования маркера (выше максимального значения)
+        const maxY = Math.max(...daily.income, ...daily.expense);
+        const markerY = maxY * 1.15; // 15% выше максимума
+
+        eventDates.push(dates[closestIdx]);
+        eventAmounts.push(markerY);
+        eventTexts.push(`${event.message}<br>Тип: ${event.type}<br>Важность: ${event.severity || 'medium'}`);
+
+        // Разные символы в зависимости от типа
+        let symbol = 'circle';
+        if (event.type === 'expense_spike') symbol = 'triangle';
+        else if (event.type === 'income_drop') symbol = 'diamond';
+        else if (event.type === 'negative_balance') symbol = 'x';
+        else if (event.type === 'category_growth') symbol = 'star';
+        eventSymbols.push(symbol);
       });
-      
-      traces.push({
-        x: maDates,
-        y: maExpenseValid,
-        name: 'MA Расходы (7д)',
-        type: 'scatter',
-        mode: 'lines',
-        line: { color: '#dc3545', width: 2, dash: 'dash', opacity: 0.7 },
-        hovertemplate: '<b>MA Расходы (7д)</b><br>Дата: %{x|%Y-%m-%d}<br>Среднее: %{y:.2f}<extra></extra>',
-      });
+
+      if (eventDates.length > 0) {
+        traces.push({
+          x: eventDates,
+          y: eventAmounts,
+          name: '🚩 Events/Anomalies',
+          type: 'scatter',
+          mode: 'markers+text',
+          marker: {
+            size: 14,
+            color: '#ffc107',
+            symbol: eventSymbols,
+            line: { width: 2, color: '#ff9800' },
+            opacity: 0.8,
+          },
+          text: chartData.events.map(e => '🚩'),
+          textposition: 'top center',
+          textfont: { size: 12 },
+          hovertemplate: '<b>🚩 ALERT!</b><br>%{customdata}<extra></extra>',
+          customdata: eventTexts,
+          hoverlabel: { bgcolor: 'rgba(255, 193, 7, 0.95)', font: { size: 13, color: '#000' } },
+        });
+      }
     }
+
+    const layout = {
+      title: { text: 'Динамика доходов и расходов по дням', font: { size: 18, color: '#1a1a1a' } },
+      xaxis: {
+        title: { text: 'Дата', font: { size: 14 } },
+        type: 'date',
+        showgrid: true,
+        gridcolor: 'rgba(0,0,0,0.08)',
+        zeroline: false,
+        tickformat: '%d.%m.%Y',
+      },
+      yaxis: {
+        title: { text: 'Сумма (руб.)', font: { size: 14 } },
+        showgrid: true,
+        gridcolor: 'rgba(0,0,0,0.08)',
+        zeroline: true,
+        zerolinecolor: 'rgba(0,0,0,0.2)',
+        tickformat: ',.0f',
+      },
+      hovermode: 'x unified',
+      hoverlabel: { bgcolor: 'rgba(255,255,255,0.9)', font: { size: 12 } },
+      legend: {
+        orientation: 'h',
+        y: -0.25,
+        x: 0.5,
+        xanchor: 'center',
+        font: { size: 12 },
+      },
+      margin: { l: 70, r: 30, t: 50, b: 80 },
+      plot_bgcolor: 'rgba(255,255,255,1)',
+      paper_bgcolor: 'rgba(255,255,255,1)',
+      font: { family: 'Arial, sans-serif', size: 12, color: '#1a1a1a' },
+    };
+
+    const config = {
+      responsive: true,
+      displayModeBar: true,
+      displaylogo: false,
+      modeBarButtonsToAdd: ['drawline', 'drawopenpath', 'drawclosedpath', 'drawcircle', 'drawrect', 'eraseshape'],
+      modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+      toImageButtonOptions: {
+        format: 'png',
+        filename: 'financial_chart',
+        height: 600,
+        width: 1200,
+        scale: 1
+      }
+    };
+
+    Plotly.newPlot('timeSeriesChart', traces, layout, config);
+    charts.timeSeries = true;
   }
-  
-  // Events/Anomalies markers - размещаем на соответствующих датах
-  if (chartData.events && chartData.events.length > 0) {
-    const eventDates = [];
-    const eventAmounts = [];
-    const eventTexts = [];
-    const eventSymbols = [];
-    
-    chartData.events.forEach(event => {
-      const eventDate = new Date(event.date);
-      // Находим индекс ближайшей даты в графике
-      let closestIdx = 0;
-      let minDiff = Infinity;
-      dates.forEach((d, idx) => {
-        const diff = Math.abs(d - eventDate);
-        if (diff < minDiff) {
-          minDiff = diff;
-          closestIdx = idx;
-        }
-      });
-      
-      // Используем сумму для позиционирования маркера (выше максимального значения)
-      const maxY = Math.max(...daily.income, ...daily.expense);
-      const markerY = maxY * 1.15; // 15% выше максимума
-      
-      eventDates.push(dates[closestIdx]);
-      eventAmounts.push(markerY);
-      eventTexts.push(`${event.message}<br>Тип: ${event.type}<br>Важность: ${event.severity || 'medium'}`);
-      
-      // Разные символы в зависимости от типа
-      let symbol = 'circle';
-      if (event.type === 'expense_spike') symbol = 'triangle';
-      else if (event.type === 'income_drop') symbol = 'diamond';
-      else if (event.type === 'negative_balance') symbol = 'x';
-      else if (event.type === 'category_growth') symbol = 'star';
-      eventSymbols.push(symbol);
-    });
-    
-    if (eventDates.length > 0) {
-      traces.push({
-        x: eventDates,
-        y: eventAmounts,
-        name: '🚩 События/Аномалии',
+
+  function renderCumulativeChart() {
+    if (!chartData || !chartData.daily) return;
+
+    const daily = chartData.daily;
+    const dates = daily.dates.map(d => new Date(d));
+
+    const traces = [
+      {
+        x: dates,
+        y: daily.cumulative_income,
+        name: 'Cumulative Income',
         type: 'scatter',
-        mode: 'markers+text',
-        marker: { 
-          size: 14, 
-          color: '#ffc107',
-          symbol: eventSymbols,
-          line: { width: 2, color: '#ff9800' },
-          opacity: 0.8,
+        mode: 'lines',
+        fill: 'tozeroy',
+        line: { color: '#198754', width: 3 },
+        fillcolor: 'rgba(25, 135, 84, 0.25)',
+        hovertemplate: '<b>Cumulative Income</b><br>Date: %{x|%Y-%m-%d}<br>Amount: %{y:,.2f} RUB<extra></extra>',
+      },
+      {
+        x: dates,
+        y: daily.cumulative_profit,
+        name: 'Cumulative Profit',
+        type: 'scatter',
+        mode: 'lines',
+        fill: 'tozeroy',
+        line: { color: '#0d6efd', width: 3 },
+        fillcolor: 'rgba(13, 110, 253, 0.2)',
+        hovertemplate: '<b>Cumulative Profit</b><br>Date: %{x|%Y-%m-%d}<br>Amount: %{y:,.2f} RUB<extra></extra>',
+      }
+    ];
+
+    const layout = {
+      title: { text: 'Кумулятивный рост доходов и прибыли', font: { size: 16, color: '#1a1a1a' } },
+      xaxis: {
+        title: { text: 'Дата', font: { size: 12 } },
+        type: 'date',
+        tickformat: '%d.%m.%Y',
+        showgrid: true,
+        gridcolor: 'rgba(0,0,0,0.08)',
+      },
+      yaxis: {
+        title: { text: 'Кумулятивная сумма (руб.)', font: { size: 12 } },
+        tickformat: ',.0f',
+        showgrid: true,
+        gridcolor: 'rgba(0,0,0,0.08)',
+      },
+      hovermode: 'x unified',
+      hoverlabel: { bgcolor: 'rgba(255,255,255,0.9)', font: { size: 12 } },
+      legend: {
+        orientation: 'h',
+        y: -0.2,
+        x: 0.5,
+        xanchor: 'center',
+      },
+      margin: { l: 80, r: 30, t: 50, b: 60 },
+      plot_bgcolor: 'rgba(255,255,255,1)',
+      paper_bgcolor: 'rgba(255,255,255,1)',
+      font: { size: 12 },
+    };
+
+    const config = { responsive: true, displayModeBar: true };
+
+    Plotly.newPlot('cumulativeChart', traces, layout, config);
+  }
+
+  function renderPieCharts() {
+    if (!chartData || !chartData.categories) return;
+
+    // Expense Pie (Donut)
+    const expenseData = chartData.categories.expenses || [];
+    if (expenseData.length > 0) {
+      const colors = ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#6f42c1', '#20c997', '#fd7e14', '#0dcaf0', '#6610f2', '#e83e8c'];
+      const trace = {
+        labels: expenseData.map(c => c.category),
+        values: expenseData.map(c => c.total),
+        type: 'pie',
+        hole: 0.5,
+        textinfo: 'label+percent',
+        textposition: 'outside',
+        marker: {
+          colors: colors.slice(0, expenseData.length),
+          line: { color: '#fff', width: 2 }
         },
-        text: chartData.events.map(e => '🚩'),
-        textposition: 'top center',
-        textfont: { size: 12 },
-        hovertemplate: '<b>🚩 ALERT!</b><br>%{customdata}<extra></extra>',
-        customdata: eventTexts,
-        hoverlabel: { bgcolor: 'rgba(255, 193, 7, 0.95)', font: { size: 13, color: '#000' } },
+        hovertemplate: '<b>%{label}</b><br>Сумма: %{value:,.2f} руб.<br>Процент: %{percent}<extra></extra>',
+      };
+
+      const layout = {
+        title: { text: '', font: { size: 14 } },
+        margin: { l: 20, r: 20, t: 20, b: 20 },
+        showlegend: true,
+        legend: { orientation: 'v', x: 1.1, y: 0.5 },
+        font: { size: 12 },
+      };
+
+      const config = { responsive: true, displayModeBar: false };
+
+      Plotly.newPlot('expensePieChart', [trace], layout, config).then(() => {
+        // Добавляем обработчик клика для drilldown
+        document.getElementById('expensePieChart').on('plotly_click', function (data) {
+          const clickedCategory = data.points[0].label;
+          document.getElementById('categoryFilter').value = clickedCategory;
+          loadDashboardData();
+        });
+      });
+    }
+
+    // Income Pie (Donut)
+    const incomeData = chartData.categories.incomes || [];
+    if (incomeData.length > 0) {
+      const colors = ['#198754', '#0d6efd', '#20c997', '#6f42c1', '#0dcaf0', '#6610f2'];
+      const trace = {
+        labels: incomeData.map(c => c.category),
+        values: incomeData.map(c => c.total),
+        type: 'pie',
+        hole: 0.5,
+        textinfo: 'label+percent',
+        textposition: 'outside',
+        marker: {
+          colors: colors.slice(0, incomeData.length),
+          line: { color: '#fff', width: 2 }
+        },
+        hovertemplate: '<b>%{label}</b><br>Сумма: %{value:,.2f} руб.<br>Процент: %{percent}<extra></extra>',
+      };
+
+      const layout = {
+        title: { text: '', font: { size: 14 } },
+        margin: { l: 20, r: 20, t: 20, b: 20 },
+        showlegend: true,
+        legend: { orientation: 'v', x: 1.1, y: 0.5 },
+        font: { size: 12 },
+      };
+
+      const config = { responsive: true, displayModeBar: false };
+
+      Plotly.newPlot('incomePieChart', [trace], layout, config).then(() => {
+        // Добавляем обработчик клика для drilldown
+        document.getElementById('incomePieChart').on('plotly_click', function (data) {
+          const clickedCategory = data.points[0].label;
+          document.getElementById('categoryFilter').value = clickedCategory;
+          loadDashboardData();
+        });
       });
     }
   }
-  
-  const layout = {
-    title: { text: 'Динамика доходов и расходов по дням', font: { size: 18, color: '#1a1a1a' } },
-    xaxis: { 
-      title: { text: 'Дата', font: { size: 14 } },
-      type: 'date',
-      showgrid: true,
-      gridcolor: 'rgba(0,0,0,0.08)',
-      zeroline: false,
-      tickformat: '%d.%m.%Y',
-    },
-    yaxis: { 
-      title: { text: 'Сумма (руб.)', font: { size: 14 } },
-      showgrid: true,
-      gridcolor: 'rgba(0,0,0,0.08)',
-      zeroline: true,
-      zerolinecolor: 'rgba(0,0,0,0.2)',
-      tickformat: ',.0f',
-    },
-    hovermode: 'x unified',
-    hoverlabel: { bgcolor: 'rgba(255,255,255,0.9)', font: { size: 12 } },
-    legend: { 
-      orientation: 'h', 
-      y: -0.25,
-      x: 0.5,
-      xanchor: 'center',
+
+  function renderBarChart() {
+    if (!chartData || !chartData.categories) return;
+
+    const expenseData = chartData.categories.expenses || [];
+    if (expenseData.length === 0) return;
+
+    // Сортируем по убыванию для лучшей визуализации
+    const sortedData = [...expenseData].sort((a, b) => b.total - a.total);
+
+    const trace = {
+      x: sortedData.map(c => c.category),
+      y: sortedData.map(c => c.total),
+      type: 'bar',
+      marker: {
+        color: sortedData.map((_, i) => {
+          const colors = ['#dc3545', '#fd7e14', '#ffc107', '#198754', '#0dcaf0', '#0d6efd', '#6f42c1'];
+          return colors[i % colors.length];
+        }),
+        line: { color: '#fff', width: 1 },
+      },
+      hovertemplate: '<b>%{x}</b><br>Amount: %{y:,.2f} RUB<extra></extra>',
+      text: sortedData.map(c => c.total.toFixed(2)),
+      textposition: 'outside',
+      textfont: { size: 11 },
+    };
+
+    const layout = {
+      title: { text: '', font: { size: 14 } },
+      xaxis: {
+        title: { text: 'Категория', font: { size: 12 } },
+        tickangle: -45,
+      },
+      yaxis: {
+        title: { text: 'Сумма (руб.)', font: { size: 12 } },
+        tickformat: ',.0f',
+      },
+      margin: { l: 70, r: 30, t: 30, b: 100 },
+      plot_bgcolor: 'rgba(255,255,255,1)',
+      paper_bgcolor: 'rgba(255,255,255,1)',
       font: { size: 12 },
-    },
-    margin: { l: 70, r: 30, t: 50, b: 80 },
-    plot_bgcolor: 'rgba(255,255,255,1)',
-    paper_bgcolor: 'rgba(255,255,255,1)',
-    font: { family: 'Arial, sans-serif', size: 12, color: '#1a1a1a' },
-  };
-  
-  const config = {
-    responsive: true,
-    displayModeBar: true,
-    displaylogo: false,
-    modeBarButtonsToAdd: ['drawline', 'drawopenpath', 'drawclosedpath', 'drawcircle', 'drawrect', 'eraseshape'],
-    modeBarButtonsToRemove: ['lasso2d', 'select2d'],
-    toImageButtonOptions: {
+    };
+
+    const config = { responsive: true, displayModeBar: true };
+
+    Plotly.newPlot('expenseBarChart', [trace], layout, config).then(() => {
+      // Обработчик клика для фильтрации
+      document.getElementById('expenseBarChart').on('plotly_click', function (data) {
+        const clickedCategory = data.points[0].x;
+        document.getElementById('categoryFilter').value = clickedCategory;
+        loadDashboardData();
+      });
+    });
+  }
+
+  function renderAllCharts() {
+    renderTimeSeriesChart();
+    renderCumulativeChart();
+    renderPieCharts();
+    renderBarChart();
+  }
+
+  function updateCategories(categories) {
+    const select = document.getElementById('categoryFilter');
+    if (!select) return;
+
+    const allCats = new Set();
+    (categories.expenses || []).forEach(c => allCats.add(c.category));
+    (categories.incomes || []).forEach(c => allCats.add(c.category));
+
+    // Обновляем опции
+    const currentValue = select.value;
+    select.innerHTML = '<option value="">All Categories</option>';
+    Array.from(allCats).sort().forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat;
+      option.textContent = cat;
+      select.appendChild(option);
+    });
+    if (currentValue) select.value = currentValue;
+  }
+
+  function exportChart(chartId) {
+    Plotly.downloadImage(chartId, {
       format: 'png',
-      filename: 'financial_chart',
-      height: 600,
       width: 1200,
-      scale: 1
-    }
-  };
-  
-  Plotly.newPlot('timeSeriesChart', traces, layout, config);
-  charts.timeSeries = true;
-}
-
-function renderCumulativeChart() {
-  if (!chartData || !chartData.daily) return;
-  
-  const daily = chartData.daily;
-  const dates = daily.dates.map(d => new Date(d));
-  
-  const traces = [
-    {
-      x: dates,
-      y: daily.cumulative_income,
-      name: 'Кумулятивные доходы',
-      type: 'scatter',
-      mode: 'lines',
-      fill: 'tozeroy',
-      line: { color: '#198754', width: 3 },
-      fillcolor: 'rgba(25, 135, 84, 0.25)',
-      hovertemplate: '<b>Кумулятивные доходы</b><br>Дата: %{x|%Y-%m-%d}<br>Сумма: %{y:,.2f} руб.<extra></extra>',
-    },
-    {
-      x: dates,
-      y: daily.cumulative_profit,
-      name: 'Кумулятивная прибыль',
-      type: 'scatter',
-      mode: 'lines',
-      fill: 'tozeroy',
-      line: { color: '#0d6efd', width: 3 },
-      fillcolor: 'rgba(13, 110, 253, 0.2)',
-      hovertemplate: '<b>Кумулятивная прибыль</b><br>Дата: %{x|%Y-%m-%d}<br>Сумма: %{y:,.2f} руб.<extra></extra>',
-    }
-  ];
-  
-  const layout = {
-    title: { text: 'Кумулятивный рост доходов и прибыли', font: { size: 16, color: '#1a1a1a' } },
-    xaxis: { 
-      title: { text: 'Дата', font: { size: 12 } },
-      type: 'date',
-      tickformat: '%d.%m.%Y',
-      showgrid: true,
-      gridcolor: 'rgba(0,0,0,0.08)',
-    },
-    yaxis: { 
-      title: { text: 'Кумулятивная сумма (руб.)', font: { size: 12 } },
-      tickformat: ',.0f',
-      showgrid: true,
-      gridcolor: 'rgba(0,0,0,0.08)',
-    },
-    hovermode: 'x unified',
-    hoverlabel: { bgcolor: 'rgba(255,255,255,0.9)', font: { size: 12 } },
-    legend: { 
-      orientation: 'h', 
-      y: -0.2,
-      x: 0.5,
-      xanchor: 'center',
-    },
-    margin: { l: 80, r: 30, t: 50, b: 60 },
-    plot_bgcolor: 'rgba(255,255,255,1)',
-    paper_bgcolor: 'rgba(255,255,255,1)',
-    font: { size: 12 },
-  };
-  
-  const config = { responsive: true, displayModeBar: true };
-  
-  Plotly.newPlot('cumulativeChart', traces, layout, config);
-}
-
-function renderPieCharts() {
-  if (!chartData || !chartData.categories) return;
-  
-  // Expense Pie (Donut)
-  const expenseData = chartData.categories.expenses || [];
-  if (expenseData.length > 0) {
-    const colors = ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#6f42c1', '#20c997', '#fd7e14', '#0dcaf0', '#6610f2', '#e83e8c'];
-    const trace = {
-      labels: expenseData.map(c => c.category),
-      values: expenseData.map(c => c.total),
-      type: 'pie',
-      hole: 0.5,
-      textinfo: 'label+percent',
-      textposition: 'outside',
-      marker: {
-        colors: colors.slice(0, expenseData.length),
-        line: { color: '#fff', width: 2 }
-      },
-      hovertemplate: '<b>%{label}</b><br>Сумма: %{value:,.2f} руб.<br>Процент: %{percent}<extra></extra>',
-    };
-    
-    const layout = {
-      title: { text: '', font: { size: 14 } },
-      margin: { l: 20, r: 20, t: 20, b: 20 },
-      showlegend: true,
-      legend: { orientation: 'v', x: 1.1, y: 0.5 },
-      font: { size: 12 },
-    };
-    
-    const config = { responsive: true, displayModeBar: false };
-    
-    Plotly.newPlot('expensePieChart', [trace], layout, config).then(() => {
-      // Добавляем обработчик клика для drilldown
-      document.getElementById('expensePieChart').on('plotly_click', function(data) {
-        const clickedCategory = data.points[0].label;
-        document.getElementById('categoryFilter').value = clickedCategory;
-        loadDashboardData();
-      });
+      height: 600,
+      filename: 'chart'
     });
   }
-  
-  // Income Pie (Donut)
-  const incomeData = chartData.categories.incomes || [];
-  if (incomeData.length > 0) {
-    const colors = ['#198754', '#0d6efd', '#20c997', '#6f42c1', '#0dcaf0', '#6610f2'];
-    const trace = {
-      labels: incomeData.map(c => c.category),
-      values: incomeData.map(c => c.total),
-      type: 'pie',
-      hole: 0.5,
-      textinfo: 'label+percent',
-      textposition: 'outside',
-      marker: {
-        colors: colors.slice(0, incomeData.length),
-        line: { color: '#fff', width: 2 }
-      },
-      hovertemplate: '<b>%{label}</b><br>Сумма: %{value:,.2f} руб.<br>Процент: %{percent}<extra></extra>',
-    };
-    
-    const layout = {
-      title: { text: '', font: { size: 14 } },
-      margin: { l: 20, r: 20, t: 20, b: 20 },
-      showlegend: true,
-      legend: { orientation: 'v', x: 1.1, y: 0.5 },
-      font: { size: 12 },
-    };
-    
-    const config = { responsive: true, displayModeBar: false };
-    
-    Plotly.newPlot('incomePieChart', [trace], layout, config).then(() => {
-      // Добавляем обработчик клика для drilldown
-      document.getElementById('incomePieChart').on('plotly_click', function(data) {
-        const clickedCategory = data.points[0].label;
-        document.getElementById('categoryFilter').value = clickedCategory;
-        loadDashboardData();
-      });
-    });
-  }
-}
 
-function renderBarChart() {
-  if (!chartData || !chartData.categories) return;
-  
-  const expenseData = chartData.categories.expenses || [];
-  if (expenseData.length === 0) return;
-  
-  // Сортируем по убыванию для лучшей визуализации
-  const sortedData = [...expenseData].sort((a, b) => b.total - a.total);
-  
-  const trace = {
-    x: sortedData.map(c => c.category),
-    y: sortedData.map(c => c.total),
-    type: 'bar',
-    marker: {
-      color: sortedData.map((_, i) => {
-        const colors = ['#dc3545', '#fd7e14', '#ffc107', '#198754', '#0dcaf0', '#0d6efd', '#6f42c1'];
-        return colors[i % colors.length];
-      }),
-      line: { color: '#fff', width: 1 },
-    },
-    hovertemplate: '<b>%{x}</b><br>Сумма: %{y:,.2f} руб.<extra></extra>',
-    text: sortedData.map(c => c.total.toFixed(2)),
-    textposition: 'outside',
-    textfont: { size: 11 },
-  };
-  
-  const layout = {
-    title: { text: '', font: { size: 14 } },
-    xaxis: { 
-      title: { text: 'Категория', font: { size: 12 } },
-      tickangle: -45,
-    },
-    yaxis: { 
-      title: { text: 'Сумма (руб.)', font: { size: 12 } },
-      tickformat: ',.0f',
-    },
-    margin: { l: 70, r: 30, t: 30, b: 100 },
-    plot_bgcolor: 'rgba(255,255,255,1)',
-    paper_bgcolor: 'rgba(255,255,255,1)',
-    font: { size: 12 },
-  };
-  
-  const config = { responsive: true, displayModeBar: true };
-  
-  Plotly.newPlot('expenseBarChart', [trace], layout, config).then(() => {
-    // Обработчик клика для фильтрации
-    document.getElementById('expenseBarChart').on('plotly_click', function(data) {
-      const clickedCategory = data.points[0].x;
-      document.getElementById('categoryFilter').value = clickedCategory;
-      loadDashboardData();
-    });
-  });
-}
+  function exportDataCSV() {
+    if (!chartData || !chartData.daily) return;
 
-function renderAllCharts() {
-  renderTimeSeriesChart();
-  renderCumulativeChart();
-  renderPieCharts();
-  renderBarChart();
-}
-
-function updateCategories(categories) {
-  const select = document.getElementById('categoryFilter');
-  if (!select) return;
-  
-  const allCats = new Set();
-  (categories.expenses || []).forEach(c => allCats.add(c.category));
-  (categories.incomes || []).forEach(c => allCats.add(c.category));
-  
-  // Обновляем опции
-  const currentValue = select.value;
-  select.innerHTML = '<option value="">Все категории</option>';
-  Array.from(allCats).sort().forEach(cat => {
-    const option = document.createElement('option');
-    option.value = cat;
-    option.textContent = cat;
-    select.appendChild(option);
-  });
-  if (currentValue) select.value = currentValue;
-}
-
-function exportChart(chartId) {
-  Plotly.downloadImage(chartId, {
-    format: 'png',
-    width: 1200,
-    height: 600,
-    filename: 'chart'
-  });
-}
-
-function exportDataCSV() {
-  if (!chartData || !chartData.daily) return;
-  
-  const daily = chartData.daily;
-  let csv = 'Дата,Доходы,Расходы,Прибыль\n';
-  for (let i = 0; i < daily.dates.length; i++) {
-    csv += `${daily.dates[i]},${daily.income[i]},${daily.expense[i]},${daily.profit[i]}\n`;
-  }
-  
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `dashboard_data_${new Date().toISOString().split('T')[0]}.csv`;
-  link.click();
-}
-
-function toggleMovingAvg() {
-  showMovingAvg = !showMovingAvg;
-  if (chartData) renderTimeSeriesChart();
-}
-
-// Event listeners
-document.getElementById('groupBy')?.addEventListener('change', loadDashboardData);
-document.getElementById('categoryFilter')?.addEventListener('change', loadDashboardData);
-document.getElementById('showProfitFill')?.addEventListener('change', () => {
-  if (chartData) renderTimeSeriesChart();
-});
-
-// Load insights
-async function loadInsights() {
-  const params = new URLSearchParams(window.location.search);
-  const res = await fetch(`/ai/insights/?${params.toString()}`);
-  const data = await res.json();
-  
-  const alerts = document.getElementById('ai-alerts');
-  alerts.innerHTML = '';
-  (data.alerts || []).forEach(a => {
-    const li = document.createElement('li');
-    li.className = 'mb-1';
-    li.innerHTML = `<span class="badge bg-warning">${a.severity}</span> ${a.message}`;
-    alerts.appendChild(li);
-  });
-  
-  const recs = document.getElementById('ai-recs');
-  recs.innerHTML = '';
-  (data.recommendations || []).forEach(r => {
-    const li = document.createElement('li');
-    li.className = 'mb-1';
-    li.textContent = r;
-    recs.appendChild(li);
-  });
-}
-
-// Load feed
-async function loadFeed() {
-  const types = [...document.querySelectorAll('.flt-type:checked')].map(i => `type=${i.value}`).join('&');
-  const search = document.getElementById('search').value;
-  const params = new URLSearchParams(window.location.search);
-  let url = `/records/?${types}`;
-  if (search) url += `&search=${encodeURIComponent(search)}`;
-  if (params.get('start')) url += `&start=${params.get('start')}`;
-  if (params.get('end')) url += `&end=${params.get('end')}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  const feed = document.getElementById('feed');
-  feed.innerHTML = '';
-  (data.items || []).forEach(it => {
-    const li = document.createElement('li');
-    const tagStr = (it.tags && it.tags.length) ? ` [${it.tags.join(', ')}]` : '';
-    if (it.type === 'income' || it.type === 'expense') {
-      li.textContent = `${it.type === 'income' ? '💰 Доход' : '💸 Расход'} • ${it.date} • ${it.category} • ${it.amount}${tagStr}`;
-    } else if (it.type === 'event') {
-      li.textContent = `📅 Событие • ${it.date} • ${it.title}${tagStr}`;
-    } else if (it.type === 'document') {
-      li.textContent = `📄 Документ • ${it.created_at} • ${it.doc_type}${tagStr}`;
+    const daily = chartData.daily;
+    let csv = 'Date,Income,Expenses,Profit\n';
+    for (let i = 0; i < daily.dates.length; i++) {
+      csv += `${daily.dates[i]},${daily.income[i]},${daily.expense[i]},${daily.profit[i]}\n`;
     }
-    feed.appendChild(li);
-  });
-}
 
-// Upload handler
-const uploadForm = document.getElementById('uploadForm');
-const csrftoken = (document.cookie.match(/csrftoken=([^;]+)/)||[])[1];
-if (uploadForm) {
-  uploadForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(uploadForm);
-    const res = await fetch('/api/upload/', { method: 'POST', body: formData, headers: { 'X-CSRFToken': csrftoken || '' } });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `dashboard_data_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  }
+
+  function toggleMovingAvg() {
+    showMovingAvg = !showMovingAvg;
+    if (chartData) renderTimeSeriesChart();
+  }
+
+  // Event listeners
+  document.getElementById('groupBy')?.addEventListener('change', loadDashboardData);
+  document.getElementById('categoryFilter')?.addEventListener('change', loadDashboardData);
+  document.getElementById('showProfitFill')?.addEventListener('change', () => {
+    if (chartData) renderTimeSeriesChart();
+  });
+
+  // Load insights
+  async function loadInsights() {
+    const params = new URLSearchParams(window.location.search);
+    const res = await fetch(`/ai/insights/?${params.toString()}`);
     const data = await res.json();
-    if (!data.ok) { alert(data.error || 'Ошибка загрузки'); return; }
+
+    const alerts = document.getElementById('ai-alerts');
+    alerts.innerHTML = '';
+    (data.alerts || []).forEach(a => {
+      const li = document.createElement('li');
+      li.className = 'mb-1';
+      li.innerHTML = `<span class="badge bg-warning">${a.severity}</span> ${a.message}`;
+      alerts.appendChild(li);
+    });
+
+    const recs = document.getElementById('ai-recs');
+    recs.innerHTML = '';
+    (data.recommendations || []).forEach(r => {
+      const li = document.createElement('li');
+      li.className = 'mb-1';
+      li.textContent = r;
+      recs.appendChild(li);
+    });
+  }
+
+  // Load feed
+  async function loadFeed() {
+    const types = [...document.querySelectorAll('.flt-type:checked')].map(i => `type=${i.value}`).join('&');
+    const search = document.getElementById('search').value;
+    const params = new URLSearchParams(window.location.search);
+    let url = `/records/?${types}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (params.get('start')) url += `&start=${params.get('start')}`;
+    if (params.get('end')) url += `&end=${params.get('end')}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const feed = document.getElementById('feed');
+    feed.innerHTML = '';
+    (data.items || []).forEach(it => {
+      const li = document.createElement('li');
+      const tagStr = (it.tags && it.tags.length) ? ` [${it.tags.join(', ')}]` : '';
+      if (it.type === 'income' || it.type === 'expense') {
+        li.textContent = `${it.type === 'income' ? '💰 Income' : '💸 Expense'} • ${it.date} • ${it.category} • ${it.amount}${tagStr}`;
+      } else if (it.type === 'event') {
+        li.textContent = `📅 Event • ${it.date} • ${it.title}${tagStr}`;
+      } else if (it.type === 'document') {
+        li.textContent = `📄 Document • ${it.created_at} • ${it.doc_type}${tagStr}`;
+      }
+      feed.appendChild(li);
+    });
+  }
+
+  // Upload handler
+  const uploadForm = document.getElementById('uploadForm');
+  const csrftoken = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1];
+  if (uploadForm) {
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(uploadForm);
+      const res = await fetch('/api/upload/', { method: 'POST', body: formData, headers: { 'X-CSRFToken': csrftoken || '' } });
+      const data = await res.json();
+      if (!data.ok) { alert(data.error || 'Ошибка загрузки'); return; }
+      loadDashboardData();
+      loadInsights();
+      loadFeed();
+    });
+  }
+
+  // Устанавливаем даты по умолчанию (последние 3 месяца)
+  function setDefaultDates() {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 3);
+
+    const startInput = document.getElementById('dateStart');
+    const endInput = document.getElementById('dateEnd');
+
+    if (startInput && !startInput.value) {
+      startInput.value = startDate.toISOString().split('T')[0];
+    }
+    if (endInput && !endInput.value) {
+      endInput.value = endDate.toISOString().split('T')[0];
+    }
+  }
+
+  // Initialize
+  document.getElementById('reload')?.addEventListener('click', () => { loadFeed(); loadInsights(); loadDashboardData(); });
+  document.querySelectorAll('.flt-type').forEach(cb => cb.addEventListener('change', loadFeed));
+  document.getElementById('filterForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
     loadDashboardData();
     loadInsights();
     loadFeed();
   });
-}
 
-// Устанавливаем даты по умолчанию (последние 3 месяца)
-function setDefaultDates() {
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setMonth(startDate.getMonth() - 3);
-  
-  const startInput = document.getElementById('dateStart');
-  const endInput = document.getElementById('dateEnd');
-  
-  if (startInput && !startInput.value) {
-    startInput.value = startDate.toISOString().split('T')[0];
-  }
-  if (endInput && !endInput.value) {
-    endInput.value = endDate.toISOString().split('T')[0];
-  }
-}
-
-// Initialize
-document.getElementById('reload')?.addEventListener('click', () => { loadFeed(); loadInsights(); loadDashboardData(); });
-document.querySelectorAll('.flt-type').forEach(cb => cb.addEventListener('change', loadFeed));
-document.getElementById('filterForm')?.addEventListener('submit', (e) => {
-  e.preventDefault();
-  loadDashboardData();
-  loadInsights();
-  loadFeed();
-});
-
-window.addEventListener('load', () => {
-  setDefaultDates();
-  loadFeed();
-  loadInsights();
-  loadDashboardData();
-});
+  window.addEventListener('load', () => {
+    setDefaultDates();
+    loadFeed();
+    loadInsights();
+    loadDashboardData();
+  });
 </script>
 {% endblock %}

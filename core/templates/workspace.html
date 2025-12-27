@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}AI Workspace - Финансовый трекинг{% endblock %}
+{% block title %}AI Workspace - Financial Tracking{% endblock %}
 
 {% block extra_head %}
 <!-- Markdown parser -->
@@ -14,7 +14,7 @@
 
 <style>
   /* ============================================================================
-   AI WORKSPACE STYLES - Современный дизайн в стиле Notion AI / ChatGPT
+   AI WORKSPACE STYLES - Modern Design like Notion AI / ChatGPT
    ============================================================================ */
   :root {
     --bg-primary: #ffffff;
@@ -717,48 +717,48 @@
 {% block content %}
 
 <!-- 🚀 Toggle button для sidebar -->
-<button class="sidebar-toggle-btn" id="sidebarToggle" title="Показать/скрыть историю">
+<button class="sidebar-toggle-btn" id="sidebarToggle" title="Show/hide history">
   ☰
 </button>
 
 <div class="workspace-container" id="workspaceContainer">
   <!-- Sidebar: Chat History -->
   <div class="sidebar-panel">
-    <div class="sidebar-header"><input id="chatSearch" class="sidebar-search" placeholder="Поиск по истории" />
-      <div class="sidebar-actions"><button id="btnNewChat" class="btn-icon" title="Новый чат">＋</button><button
-          id="btnCompare" class="btn-icon" title="Сравнить чаты">⇄</button></div>
+    <div class="sidebar-header"><input id="chatSearch" class="sidebar-search" placeholder="Search history" />
+      <div class="sidebar-actions"><button id="btnNewChat" class="btn-icon" title="New chat">＋</button><button
+          id="btnCompare" class="btn-icon" title="Compare chats">⇄</button></div>
     </div>
     <div id="chatList" class="chat-list"></div>
     <div class="sidebar-footer"><button id="btnRenameChat" class="btn btn-outline-secondary btn-sm"
-        style="flex:1;">Переименовать</button><button id="btnDeleteChat"
-        class="btn btn-outline-danger btn-sm">Удалить</button></div>
+        style="flex:1;">Rename</button><button id="btnDeleteChat" class="btn btn-outline-danger btn-sm">Delete</button>
+    </div>
   </div>
   <!-- Chat Panel -->
   <div class="chat-panel">
     <div class="chat-header">
-      <h2>💬 AI Финансовый Аналитик</h2>
-      <div class="d-flex gap-2"><button id="btnUpload" class="btn btn-sm btn-outline-primary">Загрузить
-          файл</button><button id="clearChat" class="btn btn-sm btn-outline-secondary">Очистить</button></div>
+      <h2>💬 AI Financial Analyst</h2>
+      <div class="d-flex gap-2"><button id="btnUpload" class="btn btn-sm btn-outline-primary">Upload
+          file</button><button id="clearChat" class="btn btn-sm btn-outline-secondary">Clear</button></div>
     </div>
     <div class="chat-messages" id="chatMessages">
       <div class="message assistant">
         <div class="message-avatar">AI</div>
         <div class="message-content">
-          <p>Привет ! Я ваш AI финансовый аналитик. Я могу помочь вам:</p>
+          <p>Hello! I am your AI financial analyst. I can help you:</p>
           <ul>
-            <li>Анализировать финансовые данные</li>
-            <li>Находить тренды и аномалии</li>
-            <li>Давать рекомендации по оптимизации</li>
-            <li>Отвечать на вопросы о ваших финансах</li>
+            <li>Analyze financial data</li>
+            <li>Find trends and anomalies</li>
+            <li>Provide optimization recommendations</li>
+            <li>Answer questions about your finances</li>
           </ul>
-          <p>Загрузите файл с транзакциями (CSV, Excel) или начните задавать вопросы !</p>
+          <p>Upload a transaction file (CSV, Excel) or start asking questions!</p>
         </div>
       </div>
     </div>
     <div class="chat-input-container">
       <div class="chat-input-wrapper"><textarea id="chatInput" class="chat-input"
-          placeholder="Задайте вопрос о ваших финансах..." rows="1"></textarea><button id="sendButton"
-          class="send-button"><span>Отправить</span><i class="bi bi-send"></i></button></div>
+          placeholder="Ask a question about your finances..." rows="1"></textarea><button id="sendButton"
+          class="send-button"><span>Send</span><i class="bi bi-send"></i></button></div>
     </div>
   </div>
 </div>
@@ -767,7 +767,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Загрузить файл</h5><button type="button" class="btn-close" data-bs-dismiss="modal"
+          <h5 class="modal-title">Upload File</h5><button type="button" class="btn-close" data-bs-dismiss="modal"
             aria-label="Close"></button>
         </div>
         <div class="modal-body"><input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.pdf,.docx" />
@@ -776,7 +776,7 @@
             PDF,
             DOCX</div>
         </div>
-        <div class="modal-footer"><button type="button" id="uploadConfirm" class="btn btn-primary">Загрузить</button>
+        <div class="modal-footer"><button type="button" id="uploadConfirm" class="btn btn-primary">Upload</button>
         </div>
       </div>
     </div>
@@ -861,12 +861,12 @@
         item.addEventListener('click', () => openChat(s.session_id));
         const title = document.createElement('div');
         title.className = 'chat-item-title';
-        title.textContent = s.title || 'Без названия';
+        title.textContent = s.title || 'Untitled';
         const meta = document.createElement('div');
         meta.className = 'chat-item-meta';
         const d = new Date(s.updated_at);
 
-        meta.innerHTML = `<span>${d.toLocaleDateString()}</span><span>${s.message_count} сообщений</span>`;
+        meta.innerHTML = `<span>${d.toLocaleDateString()}</span><span>${s.message_count} messages</span>`;
         const preview = document.createElement('div');
         preview.className = 'chat-item-preview';
         preview.textContent = s.data_summaries ? Object.values(s.data_summaries).map(v => v.original_name).filter(Boolean).slice(0, 2).join(', ') : '';
@@ -901,16 +901,16 @@
       sessionId = null;
       localStorage.removeItem('chatSessionId');
       document.getElementById('chatMessages').innerHTML = '';
-      addMessage('assistant', 'Создан новый чат. Чем помочь?');
+      addMessage('assistant', 'New chat created. How can I help?');
     }
 
     async function renameChat() {
       if (!sessionId) {
-        alert('Сначала откройте чат.');
+        alert('Open a chat first.');
         return;
       }
 
-      const title = prompt('Новое название чата:');
+      const title = prompt('New chat name:');
       if (!title) return;
       const csrftoken = getCookie('csrftoken');
 
@@ -929,11 +929,11 @@
 
     async function deleteChat() {
       if (!sessionId) {
-        alert('Сначала откройте чат.');
+        alert('Open a chat first.');
         return;
       }
 
-      if (!confirm('Удалить этот чат полностью?')) return;
+      if (!confirm('Delete this chat permanently?')) return;
       const csrftoken = getCookie('csrftoken');
 
       const resp = await fetch(`/api/chat/sessions/${sessionId}/delete/`, {
@@ -953,10 +953,10 @@
 
     async function openCompareDialog() {
       // Minimal prompt-based UI
-      const aStart = prompt('Период A - старт (YYYY-MM-DD):');
-      const aEnd = prompt('Период A - конец (YYYY-MM-DD):');
-      const bStart = prompt('Период B - старт (YYYY-MM-DD):');
-      const bEnd = prompt('Период B - конец (YYYY-MM-DD):');
+      const aStart = prompt('Period A - Start (YYYY-MM-DD):');
+      const aEnd = prompt('Period A - End (YYYY-MM-DD):');
+      const bStart = prompt('Period B - Start (YYYY-MM-DD):');
+      const bEnd = prompt('Period B - End (YYYY-MM-DD):');
       if (!aStart || !aEnd || !bStart || !bEnd) return;
       const csrftoken = getCookie('csrftoken');
 
@@ -967,11 +967,11 @@
 
         , body: JSON.stringify({
           items: [{
-            label: 'Период A', start: aStart, end: aEnd
+            label: 'Period A', start: aStart, end: aEnd
           }
 
             , {
-            label: 'Период B', start: bStart, end: bEnd
+            label: 'Period B', start: bStart, end: bEnd
           }
 
           ]
@@ -1004,11 +1004,11 @@
         new Chart(ctx, {
           type: 'bar', data: {
             labels: months, datasets: [{
-              label: 'Доходы', data: income, backgroundColor: '#10b981'
+              label: 'Income', data: income, backgroundColor: '#10b981'
             }
 
               , {
-              label: 'Расходы', data: expense, backgroundColor: '#ef4444'
+              label: 'Expenses', data: expense, backgroundColor: '#ef4444'
             }
 
             ]
@@ -1045,14 +1045,14 @@
         }
       });
 
-      sendButton.addEventListener('click', sendMessage);
+      sendButton.addEventListener('click', () => sendMessage());
 
       clearChat.addEventListener('click', () => {
-        if (confirm('Очистить историю чата?')) {
+        if (confirm('Clear chat history?')) {
           sessionId = null;
           localStorage.removeItem('chatSessionId');
           document.getElementById('chatMessages').innerHTML = '';
-          addMessage('assistant', 'История очищена. Как я могу помочь?');
+          addMessage('assistant', 'History cleared. How can I help?');
         }
       });
       const btnUpload = document.getElementById('btnUpload');
@@ -1063,15 +1063,20 @@
       });
     }
 
-    async function sendMessage() {
+    async function sendMessage(text = null, isHidden = false) {
       const input = document.getElementById('chatInput');
-      const message = input.value.trim();
+      const message = text || input.value.trim();
       if (!message) return;
 
-      // Add user message
-      addMessage('user', message);
-      input.value = '';
-      input.style.height = 'auto';
+      // Add user message if not hidden
+      if (!isHidden) {
+        addMessage('user', message);
+      }
+
+      if (!text) {
+        input.value = '';
+        input.style.height = 'auto';
+      }
 
       // Show loading
       const loadingId = addMessage('assistant', '...', true);
@@ -1083,7 +1088,7 @@
         const anonymize = true;
 
         if (!willUseLocal && !anonymize) {
-          const proceed = confirm('Внимание: данные будут отправлены в облако без анонимизации. Продолжить?');
+          const proceed = confirm('Warning: data will be sent to cloud without anonymization. Continue?');
 
           if (!proceed) {
             removeMessage(loadingId);
@@ -1097,7 +1102,7 @@
         const response = await fetch('/ai/chat/', {
           method: 'POST',
           headers: {
-            'X-CSRFToken': csrftoken, 
+            'X-CSRFToken': csrftoken,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
@@ -1119,11 +1124,11 @@
           addMessage('assistant', data.reply);
         } else {
           removeMessage(loadingId);
-          addMessage('assistant', `Ошибка: ${data.error || 'Неизвестная ошибка'}`);
+          addMessage('assistant', `Error: ${data.error || 'Unknown error'}`);
         }
       } catch (error) {
         removeMessage(loadingId);
-        addMessage('assistant', `Ошибка соединения: ${error.message}`);
+        addMessage('assistant', `Connection error: ${error.message}`);
       } finally {
         input.disabled = false;
         sendButton.disabled = false;
@@ -1142,7 +1147,7 @@
 
       const avatar = document.createElement('div');
       avatar.className = 'message-avatar';
-      avatar.textContent = role === 'user' ? 'Вы' : 'AI';
+      avatar.textContent = role === 'user' ? 'You' : 'AI';
 
       const contentDiv = document.createElement('div');
       contentDiv.className = 'message-content';
@@ -1219,20 +1224,20 @@
 
         if (data.ok) {
           setTimeout(() => {
-            addMessage('assistant', 'Файл загружен. Анализирую данные...', true);
-            sendMessage();
-          }
-
-            , 500);
+            addMessage('assistant', 'File uploaded. Generating financial analysis...', true);
+            // Trigger AI analysis automatically
+            const analysisPrompt = "I have uploaded a file. Please analyze the data and provide: 1. General financial state description. 2. Identified problems or anomalies. 3. Recommendations for improvement.";
+            sendMessage(analysisPrompt, true); // Hidden from user view, but AI receives it
+          }, 500);
         }
 
         else {
-          addMessage('assistant', `Ошибка: ${data.error}`);
+          addMessage('assistant', `Error: ${data.error}`);
         }
       }
 
       catch (error) {
-        addMessage('assistant', `Ошибка: ${error.message}`);
+        addMessage('assistant', `Error: ${error.message}`);
       }
     }
 
@@ -1290,7 +1295,7 @@
 
     // Delete all user data
     async function deleteAllData() {
-      if (!confirm('Удалить все ваши данные без возможности восстановления?')) return;
+      if (!confirm('Delete all your data irreversibly?')) return;
 
       try {
         const csrftoken = getCookie('csrftoken');
@@ -1303,17 +1308,17 @@
         const data = await resp.json();
 
         if (data.ok) {
-          alert('Все данные удалены.');
+          alert('All data deleted.');
           document.getElementById('chatMessages').innerHTML = '';
         }
 
         else {
-          alert('Ошибка удаления: ' + (data.error || ''));
+          alert('Deletion error: ' + (data.error || ''));
         }
       }
 
       catch (e) {
-        alert('Ошибка удаления: ' + e.message);
+        alert('Deletion error: ' + e.message);
       }
     }
 

@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.contrib import messages
 from django.conf import settings
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
@@ -39,6 +39,14 @@ from .ml.document_generator import generate_document_text
 from .ai_services.teen_coach import teen_coach
 from .ai_services.gamification import gamification_engine
 from .ai_services.llm_manager import llm_manager
+
+
+def logout_view(request):
+    """
+    Handle logout for both GET and POST requests.
+    """
+    logout(request)
+    return redirect('core:login')
 
 def get_demo_data():
     """
@@ -260,7 +268,7 @@ def _compute_monthly_summary(user) -> dict:
 def _build_monthly_table_md(summary: dict) -> str:
     """Строит markdown-таблицу по месячной сводке."""
     header = (
-        "| Месяц | Доходы | Расходы | Топ доходы | Топ расходы | Транзакций |\n"
+        "| Month | Income | Expenses | Top Income | Top Expenses | Transactions |\n"
         "|---|---|---|---|---|---|"
     )
     lines = [header]
@@ -334,11 +342,11 @@ def dashboard(request):
                 file_obj.processed = True
                 file_obj.save()
                 if num_i or num_e:
-                    messages.success(request, f'Импортировано: доходов {num_i}, расходов {num_e}.')
+                    messages.success(request, f'Imported: income {num_i}, expenses {num_e}.')
                 if stats.get('duplicates_skipped', 0) > 0:
-                    messages.info(request, f'Пропущено дубликатов: {stats["duplicates_skipped"]}.')
+                    messages.info(request, f'Skipped duplicates: {stats["duplicates_skipped"]}.')
                 if stats.get('should_warn', False):
-                    messages.warning(request, f'Обнаружено >50% дубликатов. Рекомендуется проверить файл.')
+                    messages.warning(request, f'Detected >50% duplicates. Recommended to check file.')
                 for e in errs:
                     messages.warning(request, e)
             elif name.endswith('.xlsx') or name.endswith('.xls'):
@@ -352,27 +360,27 @@ def dashboard(request):
                 file_obj.processed = True
                 file_obj.save()
                 if num_i or num_e:
-                    messages.success(request, f'Импортировано: доходов {num_i}, расходов {num_e}.')
+                    messages.success(request, f'Imported: income {num_i}, expenses {num_e}.')
                 if stats.get('duplicates_skipped', 0) > 0:
-                    messages.info(request, f'Пропущено дубликатов: {stats["duplicates_skipped"]}.')
+                    messages.info(request, f'Skipped duplicates: {stats["duplicates_skipped"]}.')
                 if stats.get('should_warn', False):
-                    messages.warning(request, f'Обнаружено >50% дубликатов. Рекомендуется проверить файл.')
+                    messages.warning(request, f'Detected >50% duplicates. Recommended to check file.')
                 for e in errs:
                     messages.warning(request, e)
             elif name.endswith('.docx'):
                 text = extract_text_from_docx(f)
                 doc = create_document_from_text('contract', text, user=request.user)
                 s = quick_text_amounts_summary(text)
-                messages.success(request, f'DOCX загружен как документ #{doc.id}. Найдено чисел: {s["numbers_found"]}, сумма: {s["sum_of_numbers"]}.')
+                messages.success(request, f'DOCX uploaded as document #{doc.id}. Found numbers: {s["numbers_found"]}, sum: {s["sum_of_numbers"]}.')
             elif name.endswith('.pdf'):
                 text = extract_text_from_pdf(f)
                 doc = create_document_from_text('contract', text, user=request.user)
                 s = quick_text_amounts_summary(text)
-                messages.success(request, f'PDF загружен как документ #{doc.id}. Найдено чисел: {s["numbers_found"]}, сумма: {s["sum_of_numbers"]}.')
+                messages.success(request, f'PDF uploaded as document #{doc.id}. Found numbers: {s["numbers_found"]}, sum: {s["sum_of_numbers"]}.')
             else:
-                messages.error(request, 'Поддерживаются только файлы CSV, Excel (.xlsx, .xls), DOCX, PDF.')
+                messages.error(request, 'Only CSV, Excel (.xlsx, .xls), DOCX, PDF files are supported.')
         except Exception as ex:
-            messages.error(request, f'Ошибка обработки файла: {ex}')
+            messages.error(request, f'File processing error: {ex}')
 
     # Filters
     start = request.GET.get('start')
@@ -480,8 +488,8 @@ def dashboard_data_api(request):
         incomes = incomes.filter(date__lte=end)
         expenses = expenses.filter(date__lte=end)
     if category:
-        incomes = incomes.filter(category=category)
-        expenses = expenses.filter(category=category)
+        incomes = incomes.filter(income_type=category)
+        expenses = expenses.filter(expense_type=category)
 
     # Данные по дням для time series
     daily_data = defaultdict(lambda: {'income': 0.0, 'expense': 0.0, 'income_count': 0, 'expense_count': 0, 'top_category_income': None, 'top_category_expense': None})
@@ -495,14 +503,14 @@ def dashboard_data_api(request):
         all_dates.add(date_key)
         daily_data[date_key]['income'] += float(inc.amount)
         daily_data[date_key]['income_count'] += 1
-        daily_categories[date_key]['income'][inc.category] += float(inc.amount)
+        daily_categories[date_key]['income'][inc.income_type] += float(inc.amount)
     
     for exp in expenses:
         date_key = exp.date.isoformat()
         all_dates.add(date_key)
         daily_data[date_key]['expense'] += float(exp.amount)
         daily_data[date_key]['expense_count'] += 1
-        daily_categories[date_key]['expense'][exp.category] += float(exp.amount)
+        daily_categories[date_key]['expense'][exp.expense_type] += float(exp.amount)
     
     # Определяем топ категорию для каждого дня
     for date_key in daily_data:
@@ -576,14 +584,14 @@ def dashboard_data_api(request):
         cumulative_profit.append(round(cum_profit, 2))
         
         # Tooltips (HTML формат для Plotly)
-        tooltip_income = f"<b>💰 Доходы</b><br>Дата: {date_key}<br>Сумма: {income_val:,.2f} руб.<br>Транзакций: {data['income_count']}"
+        tooltip_income = f"<b>💰 Income</b><br>Date: {date_key}<br>Amount: {income_val:,.2f} RUB<br>Transactions: {data['income_count']}"
         if data['top_category_income']:
-            tooltip_income += f"<br>📂 Топ категория: {data['top_category_income']}"
+            tooltip_income += f"<br>📂 Top Category: {data['top_category_income']}"
         tooltips_income.append(tooltip_income)
         
-        tooltip_expense = f"<b>💸 Расходы</b><br>Дата: {date_key}<br>Сумма: {expense_val:,.2f} руб.<br>Транзакций: {data['expense_count']}"
+        tooltip_expense = f"<b>💸 Expenses</b><br>Date: {date_key}<br>Amount: {expense_val:,.2f} RUB<br>Transactions: {data['expense_count']}"
         if data['top_category_expense']:
-            tooltip_expense += f"<br>📂 Топ категория: {data['top_category_expense']}"
+            tooltip_expense += f"<br>📂 Top Category: {data['top_category_expense']}"
         tooltips_expense.append(tooltip_expense)
         
         # Moving average
@@ -744,7 +752,7 @@ def ai_insights_api(request):
         if avg_expense and cat_total > avg_expense * 1.5:
             alerts.append({
                 'type': 'expense_spike',
-                'message': f"Расходы в категории '{cat_name}' выше среднего",
+                'message': f"Expenses in category '{cat_name}' are above average",
                 'severity': 'warning',
                 'category': cat_name,
                 'value': cat_total,

@@ -12,6 +12,7 @@ class UserProfile(models.Model):
     
     # Basic teen info
     age = models.PositiveIntegerField(null=True, blank=True)
+    bio = models.TextField(blank=True, null=True, help_text='Short bio or occupation')
     timezone = models.CharField(max_length=50, default='Asia/Bishkek')
     
     # Financial settings

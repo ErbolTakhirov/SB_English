@@ -63,9 +63,9 @@ class AIAdvisorService:
         prediction = self.forecasting.predict_goal_achievement(goal)
         
         if prediction['on_track']:
-            return f"🎯 Отлично! Вы на пути к достижению цели '{goal.title}'. {prediction['recommendation']}"
+            return f"🎯 Great job! You are on track to achieve '{goal.title}'. {prediction['recommendation']}"
         else:
-            return f"⚠️ Для достижения цели '{goal.title}' нужно скорректировать план. {prediction['recommendation']}"
+            return f"⚠️ To achieve '{goal.title}', you need to adjust your plan. {prediction['recommendation']}"
     
     def analyze_spending_patterns(self) -> Dict:
         """
@@ -116,37 +116,37 @@ class AIAdvisorService:
     def _generate_ai_advice(self, context: Dict) -> Dict:
         """Generate advice using LLM"""
         # Build prompt for young adults
-        prompt = f"""Ты финансовый советник для молодых людей (18-25 лет). 
-Проанализируй финансовую ситуацию и дай конкретные, понятные советы.
+        prompt = f"""You are a financial advisor for young adults (18-25 years old). 
+Analyze the financial situation and give specific, clear advice.
 
-📊 Финансовая ситуация:
-- Средний месячный доход: {context['historical']['avg_monthly_income']} сом
-- Средний месячный расход: {context['historical']['avg_monthly_expense']} сом
-- Чистый доход: {context['historical']['avg_monthly_net']} сом
-- Стабильность доходов: {context['historical']['income_stability'] * 100:.0f}%
-- Стабильность расходов: {context['historical']['expense_stability'] * 100:.0f}%
+📊 Financial Situation:
+- Avg Monthly Income: {context['historical']['avg_monthly_income']} KGS
+- Avg Monthly Expense: {context['historical']['avg_monthly_expense']} KGS
+- Net Income: {context['historical']['avg_monthly_net']} KGS
+- Income Stability: {context['historical']['income_stability'] * 100:.0f}%
+- Expense Stability: {context['historical']['expense_stability'] * 100:.0f}%
 
-💸 Основные траты (утечки денег):
-{chr(10).join([f"- {leak['category']}: {leak['amount']} сом ({leak['percentage']}%)" for leak in context['money_leaks']])}
+💸 Money Leaks (Top Expenses):
+{chr(10).join([f"- {leak['category']}: {leak['amount']} KGS ({leak['percentage']}%)" for leak in context['money_leaks']])}
 
-🎯 Активные цели:
-{chr(10).join([f"- {g['title']}: {g['current']}/{g['target']} сом ({g['progress']:.0f}%), осталось {g['days_left']} дней" for g in context['goals']]) if context['goals'] else "Нет активных целей"}
+🎯 Active Goals:
+{chr(10).join([f"- {g['title']}: {g['current']}/{g['target']} KGS ({g['progress']:.0f}%), {g['days_left']} days left" for g in context['goals']]) if context['goals'] else "No active goals"}
 
-📈 Прогноз на следующий месяц:
-- Ожидаемый доход: {context['forecast']['predicted_income']} сом
-- Ожидаемый расход: {context['forecast']['predicted_expense']} сом
-- Уверенность прогноза: {context['forecast']['confidence'] * 100:.0f}%
+📈 Next Month Forecast:
+- Expected Income: {context['forecast']['predicted_income']} KGS
+- Expected Expense: {context['forecast']['predicted_expense']} KGS
+- Forecast Confidence: {context['forecast']['confidence'] * 100:.0f}%
 
-Дай совет в формате:
-1. **Краткая сводка** (2-3 предложения о текущей ситуации)
-2. **Главный совет** (что важнее всего сделать прямо сейчас)
-3. **Конкретные действия** (3-5 пунктов, что делать)
+Provide advice in the following format:
+1. **Summary** (2-3 sentences about current situation)
+2. **Main Advice** (what is most important to do right now)
+3. **Action Items** (3-5 specific bullet points)
 
-Пиши простым языком, как друг. Используй эмодзи. Будь конкретным и мотивирующим."""
+Write in simple language, like a friend. Use emojis. Be specific and motivating. Respond in English."""
 
         try:
             messages = [
-                {"role": "system", "content": "Ты дружелюбный финансовый коуч для молодежи. Говори просто и конкретно."},
+                {"role": "system", "content": "You are a friendly financial coach for youth. Speak simply and concretely. Response in English."},
                 {"role": "user", "content": prompt}
             ]
             
@@ -182,11 +182,11 @@ class AIAdvisorService:
         
         # Generate summary
         if monthly_net > 0:
-            summary = f"💰 Хорошие новости! В среднем вы откладываете {monthly_net:.0f} сом в месяц."
+            summary = f"💰 Good news! On average, you save {monthly_net:.0f} KGS/mo."
         elif monthly_net < 0:
-            summary = f"⚠️ Внимание! Ваши расходы превышают доходы на {abs(monthly_net):.0f} сом в месяц."
+            summary = f"⚠️ Attention! Your expenses exceed income by {abs(monthly_net):.0f} KGS/mo."
         else:
-            summary = "📊 Ваши доходы и расходы примерно равны. Пора начать откладывать!"
+            summary = "📊 Your income and expenses are equal. Time to start saving!"
         
         # Generate action items
         action_items = []
@@ -194,25 +194,25 @@ class AIAdvisorService:
         # Check money leaks
         if context['money_leaks']:
             top_leak = context['money_leaks'][0]
-            action_items.append(f"Сократите траты на {top_leak['category']} - это {top_leak['percentage']}% ваших расходов")
+            action_items.append(f"Cut spending on {top_leak['category']} - it's {top_leak['percentage']}% of your expenses")
         
         # Check goals
         if context['goals']:
-            action_items.append(f"Работайте над {len(context['goals'])} активными целями")
+            action_items.append(f"Work on your {len(context['goals'])} active goals")
         else:
-            action_items.append("Поставьте финансовую цель - это мотивирует экономить")
+            action_items.append("Set a financial goal - it motivates saving")
         
         # Savings advice
         if monthly_net > 0:
-            action_items.append(f"Откладывайте {monthly_net * Decimal('0.8'):.0f} сом ежемесячно на цели")
+            action_items.append(f"Save {monthly_net * Decimal('0.8'):.0f} KGS monthly for goals")
         else:
-            action_items.append("Найдите 1-2 категории расходов, которые можно сократить на 20%")
+            action_items.append("Find 1-2 expense categories to cut by 20%")
         
         # Income advice
         if context['historical']['income_stability'] < 0.7:
-            action_items.append("Ищите дополнительные источники дохода для стабильности")
+            action_items.append("Look for additional income sources for stability")
         
-        advice_text = f"{summary}\n\n**Рекомендации:**\n" + "\n".join([f"{i+1}. {item}" for i, item in enumerate(action_items)])
+        advice_text = f"{summary}\n\n**Recommendations:**\n" + "\n".join([f"{i+1}. {item}" for i, item in enumerate(action_items)])
         
         return {
             'summary': summary,

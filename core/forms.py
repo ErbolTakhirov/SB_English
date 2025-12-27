@@ -166,6 +166,12 @@ class CustomUserCreationForm(UserCreationForm):
         label='Seed Phrase (сохраните для восстановления)',
         help_text='Сохраните эту фразу в безопасном месте. Она нужна для восстановления доступа.'
     )
+    bio = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Tell us about yourself (occupation, hobbies)...'}),
+        label='Bio / Occupation',
+        help_text='Helps AI provide better recommendations'
+    )
     
     class Meta:
         model = User
@@ -199,8 +205,10 @@ class CustomUserCreationForm(UserCreationForm):
             user.save()
             # Создаём профиль пользователя
             from .models import UserProfile
+            bio = self.cleaned_data.get('bio')
             profile = UserProfile.objects.create(
-                user=user
+                user=user,
+                bio=bio
             )
         return user
 

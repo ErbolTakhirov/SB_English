@@ -197,12 +197,12 @@
       <div class="collapse navbar-collapse" id="mainNav">
         {% if user.is_authenticated %}
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{% url 'core:workspace' %}">Чат</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'core:workspace' %}">Chat</a></li>
           <li class="nav-item"><a class="nav-link fw-bold text-primary" href="{% url 'core:dashboard' %}"><i
-                class="bi bi-robot me-1"></i>AI Бухгалтер</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'core:dashboard' %}">Дэшборд</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'core:income_list' %}">Доходы</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'core:expense_list' %}">Расходы</a></li>
+                class="bi bi-robot me-1"></i>AI Accountant</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'core:dashboard' %}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'core:income_list' %}">Income</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'core:expense_list' %}">Expenses</a></li>
         </ul>
         {% endif %}
         <div class="d-flex gap-2">
@@ -210,13 +210,13 @@
           <span class="text-muted me-2" style="line-height: 2.2;">{{ user.username }}</span>
           <a class="btn btn-outline-secondary btn-sm" href="{% url 'core:logout' %}"><i
               class="bi bi-box-arrow-right"></i>
-            Выход</a>
+            Logout</a>
           {% else %}
           <a class="btn btn-outline-primary btn-sm" href="{% url 'core:login' %}"><i
               class="bi bi-box-arrow-in-right"></i>
-            Вход</a>
+            Login</a>
           <a class="btn btn-primary btn-sm" href="{% url 'core:register' %}"><i class="bi bi-person-plus"></i>
-            Регистрация</a>
+            Register</a>
           {% endif %}
           <button id="themeToggle" class="btn btn-outline-primary btn-sm" type="button"><i
               class="bi bi-moon-stars"></i></button>
@@ -243,7 +243,7 @@
   <footer class="border-top py-3">
     <div class="container d-flex justify-content-between align-items-center footer">
       <small>© {{ now|default:2025 }} SB Finance AI</small>
-      <small>Версия интерфейса: 1.0</small>
+      <small>Interface Version: 1.0</small>
     </div>
   </footer>
 

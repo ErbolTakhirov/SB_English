@@ -184,13 +184,18 @@ class QueryAnalyzer:
                 break
         
         # Проверяем конкретные месяцы
-        months_ru = {
+        months_mapping = {
             'январ': 1, 'феврал': 2, 'март': 3, 'апрел': 4,
             'ма': 5, 'июн': 6, 'июл': 7, 'август': 8,
             'сентябр': 9, 'октябр': 10, 'ноябр': 11, 'декабр': 12,
+            'january': 1, 'february': 2, 'march': 3, 'april': 4,
+            'may': 5, 'june': 6, 'july': 7, 'august': 8,
+            'september': 9, 'october': 10, 'november': 11, 'december': 12,
+            'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4,
+            'jun': 6, 'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
         }
         
-        for month_name, month_num in months_ru.items():
+        for month_name, month_num in months_mapping.items():
             if month_name in self.query_text:
                 result['type'] = 'specific_month'
                 # Определяем год (текущий или прошлый)

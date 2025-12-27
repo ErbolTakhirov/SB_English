@@ -192,7 +192,7 @@ def import_csv_transactions(file_obj, import_to_db: bool = True, user=None, sour
     try:
         df = pd.read_csv(file_obj)
     except Exception as e:
-        return 0, 0, [f'Ошибка чтения CSV: {e}'], stats
+        return 0, 0, [f'CSV read error: {e}'], stats
 
     cols = set(c.lower() for c in df.columns)
     if not CSV_REQUIRED_COLUMNS.issubset(cols):
@@ -223,7 +223,7 @@ def import_csv_transactions(file_obj, import_to_db: bool = True, user=None, sour
         # For now, just error if date/amount still missing.
         required_data = {'date', 'amount'}
         if not required_data.issubset(cols):
-             return 0, 0, [f'Не удалось распознать столбцы. Нужны: {", ".join(sorted(CSV_REQUIRED_COLUMNS))}. Найдено: {cols}'], stats
+             return 0, 0, [f'Could not recognize columns. Required: {", ".join(sorted(CSV_REQUIRED_COLUMNS))}. Found: {cols}'], stats
 
     # Ensure optional columns exist
     if 'category' not in df.columns:
@@ -254,7 +254,7 @@ def import_csv_transactions(file_obj, import_to_db: bool = True, user=None, sour
             cat = str(row.get('category', '') or '')
             desc = str(row.get('description', '') or '')
         except Exception as e:
-            errors.append(f'Строка с ошибкой: {e}')
+            errors.append(f'Row error: {e}')
             continue
 
         # Проверка на дубликаты
@@ -278,7 +278,7 @@ def import_csv_transactions(file_obj, import_to_db: bool = True, user=None, sour
                 etype = map_transaction_category('expense', cat, desc)
                 expense_rows.append({'amount': amt, 'date': dt, 'expense_type': etype, 'description': desc})
         else:
-            errors.append(f'Неизвестный type: {typ}')
+            errors.append(f'Unknown type: {typ}')
 
     # AI Batch Categorization for 'other' entries
     if import_to_db:
@@ -349,7 +349,7 @@ def import_excel_transactions(file_obj, import_to_db: bool = True, sheet_name: O
             file_obj.seek(0)
             df = pd.read_excel(file_obj, sheet_name=sheet_name, engine='xlrd')
         except Exception as e2:
-            return 0, 0, [f'Ошибка чтения Excel: {e}. Также попытка с xlrd: {e2}'], stats
+            return 0, 0, [f'Excel read error: {e}. Also retried with xlrd: {e2}'], stats
 
     cols = set(c.lower() for c in df.columns)
     if not CSV_REQUIRED_COLUMNS.issubset(cols):
@@ -368,7 +368,7 @@ def import_excel_transactions(file_obj, import_to_db: bool = True, sheet_name: O
     if not CSV_REQUIRED_COLUMNS.issubset(cols):
         required_data = {'date', 'amount'}
         if not required_data.issubset(cols):
-             return 0, 0, [f'Excel должен содержать столбцы: {", ".join(sorted(CSV_REQUIRED_COLUMNS))}'], stats
+             return 0, 0, [f'Excel must contain columns: {", ".join(sorted(CSV_REQUIRED_COLUMNS))}'], stats
 
     # Ensure optional columns exist
     if 'category' not in df.columns:
@@ -400,7 +400,7 @@ def import_excel_transactions(file_obj, import_to_db: bool = True, sheet_name: O
             cat = str(row.get('category', '') or '')
             desc = str(row.get('description', '') or '')
         except Exception as e:
-            errors.append(f'Строка с ошибкой: {e}')
+            errors.append(f'Row error: {e}')
             continue
 
         # Проверка на дубликаты
@@ -438,7 +438,7 @@ def import_excel_transactions(file_obj, import_to_db: bool = True, sheet_name: O
                     source_file=source_file
                 ))
         else:
-            errors.append(f'Неизвестный type: {typ}')
+            errors.append(f'Unknown type: {typ}')
 
     # Проверка на предупреждение (>50% дублей)
     if total_rows > 0 and duplicate_rows / total_rows > 0.5:
@@ -458,7 +458,7 @@ def extract_text_from_docx(file_obj) -> str:
         doc = Docx(file_obj)
         return "\n".join(p.text for p in doc.paragraphs)
     except Exception as e:
-        return f"[Ошибка чтения DOCX: {e}]"
+        return f"[DOCX read error: {e}]"
 
 
 def extract_text_from_pdf(file_obj) -> str:
@@ -468,7 +468,7 @@ def extract_text_from_pdf(file_obj) -> str:
         data = file_obj.read()
         return extract_text(io.BytesIO(data))
     except Exception as e:
-        return f"[Ошибка чтения PDF: {e}]"
+        return f"[PDF read error: {e}]"
 
 
 def create_document_from_text(doc_type: str, text: str, user=None) -> Document:

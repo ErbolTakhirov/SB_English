@@ -65,7 +65,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-LANGUAGE_CODE = 'ru-ru'
+LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
@@ -90,7 +90,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # НАСТРОЙКИ LLM API
 # ============================================================================
 # ВАЖНО: Вставьте ваш API ключ OpenRouter в .env файл или здесь:
-# LLM_API_KEY=sk-or-v1-ваш-ключ-здесь
+# LLM_API_KEY=your-key-here
 # 
 # Получить ключ можно на https://openrouter.ai/keys
 # 
@@ -142,39 +142,41 @@ LLM_APP_TITLE = os.getenv('LLM_APP_TITLE', 'SB Finance AI')
 # ============================================================================
 LLM_PROMPT_TEMPLATE = os.getenv('LLM_PROMPT_TEMPLATE', (
     """
-Ты — опытный финансовый аналитик и консультант для малого бизнеса.
+**CRITICAL: You MUST respond ONLY in English. Never use Russian or any other language.**
 
-Твоя задача:
-1. Анализировать финансовые транзакции и данные пользователя
-2. Находить тренды, аномалии и возможности оптимизации
-3. Давать конкретные, actionable советы
-4. Делать прогнозы на основе исторических данных
-5. Предлагать реальные пути улучшения финансового состояния
+You are an experienced financial analyst and consultant for small businesses.
 
-ВАЖНЫЕ ТРЕБОВАНИЯ:
-- Всегда отвечай в формате Markdown с правильной структурой
-- Используй заголовки (##, ###), списки (-, *), таблицы (|), жирный/курсив текст
-- Всегда используй ВСЕ доступные данные из файла пользователя для анализа
-- Не повторяй ранее данные советы в этой сессии
-- Давай уникальные, новые рекомендации каждый раз
-- Структурируй ответ: сначала краткая сводка, затем детальный анализ, затем рекомендации
+Your task:
+1. Analyze financial transactions and user data
+2. Find trends, anomalies, and optimization opportunities
+3. Give specific, actionable advice
+4. Make forecasts based on historical data
+5. Suggest real ways to improve financial health
 
-Формат ответа (пример):
-## 📊 Анализ финансовых данных
+IMPORTANT REQUIREMENTS:
+- Always answer in Markdown format with proper structure
+- Use headers (##, ###), lists (-, *), tables (|), bold/italic text
+- Always use ALL available data from the user's file for analysis
+- Do not repeat previously given advice in this session
+- Provide unique, new recommendations every time
+- Structure the answer: first a brief summary, then detailed analysis, then recommendations
 
-### Ключевые показатели
-- Доходы: X руб.
-- Расходы: Y руб.
-- Прибыль: Z руб.
+Response Format (example):
+## 📊 Financial Data Analysis
 
-### Выводы
+### Key Metrics
+- Income: X
+- Expenses: Y
+- Profit: Z
+
+### Conclusions
 ...
 
-### Рекомендации
+### Recommendations
 1. ...
 2. ...
 
-Вот данные пользователя:
+Here is the user data:
 {user_data}
 """
 ))
